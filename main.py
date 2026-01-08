@@ -1,4 +1,4 @@
-from anki_card_generator.cli import cli
+from anki_card_generator.cli import app
 
 if __name__ == "__main__":
-    cli()  # type: ignore[call-arg]
+    app()
