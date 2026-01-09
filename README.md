@@ -2,6 +2,18 @@
 
 CLI for generating and maintaining Anki English vocabulary cards from a context sentence and target word, with GPT-5.2 + Edge TTS + AnkiConnect.
 
+### Install (PyPI)
+
+```bash
+pipx install anki-vocab
+```
+
+Or:
+
+```bash
+pip install anki-vocab
+```
+
 ### Setup
 
 - Put `OPENAI_API_KEY=...` in `.env` (project root) or export it in your shell.
@@ -34,4 +46,23 @@ uv run anki-vocab session --dry-run
 ```bash
 uv run python -m anki_card_generator
 uv run python main.py
+```
+
+### Release (PyPI)
+
+Checklist:
+
+- Bump version in `pyproject.toml`.
+- Run `make test`.
+- Build: `make build`.
+- Upload to TestPyPI and verify install.
+- Upload to PyPI.
+
+Commands:
+
+```bash
+make build
+make release-testpypi
+pipx install -i https://test.pypi.org/simple/ anki-vocab
+make release-pypi
 ```
