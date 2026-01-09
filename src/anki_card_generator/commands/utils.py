@@ -20,7 +20,7 @@ def _raw_mode() -> None:
     fd = sys.stdin.fileno()
     old = termios.tcgetattr(fd)
     try:
-        tty.setraw(fd)
+        tty.setcbreak(fd)
         yield
     finally:
         termios.tcsetattr(fd, termios.TCSADRAIN, old)
