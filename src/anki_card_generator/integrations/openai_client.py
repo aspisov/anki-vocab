@@ -8,12 +8,7 @@ from ..core.schema import Card, parse_card
 
 
 def _read_system_prompt() -> str:
-    return (
-        resources.files("anki_card_generator")
-        .joinpath("system_prompt.jinja")
-        .read_text(encoding="utf-8")
-        .strip()
-    )
+    return resources.files("anki_card_generator").joinpath("system_prompt.jinja").read_text(encoding="utf-8").strip()
 
 
 def generate_card(sentence: str, word: str, *, model: str) -> Card:

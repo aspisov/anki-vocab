@@ -1,6 +1,12 @@
 import typer
 
-from .commands.config import config_app, config_init, config_set, config_show, config_show_path
+from .commands.config import (
+    config_app,
+    config_init,
+    config_set,
+    config_show,
+    config_show_path,
+)
 from .commands.session import session_command
 from .commands.update import update_command
 from .commands.utils import select_menu

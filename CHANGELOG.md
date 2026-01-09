@@ -7,3 +7,4 @@
 - Added unit tests for parsing, cleaning, and schema handling.
 - Added Rich-powered menu prompts with arrow-key selection.
 - Removed overwrite-audio option; audio is added only when missing.
+- Set max line length to 120 in Ruff configuration.

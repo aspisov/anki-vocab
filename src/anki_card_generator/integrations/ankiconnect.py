@@ -6,9 +6,7 @@ from typing import Any
 
 
 def ankiconnect_request(url: str, action: str, params: dict[str, Any] | None = None) -> Any:
-    payload = json.dumps(
-        {"action": action, "version": 6, "params": params or {}}
-    ).encode("utf-8")
+    payload = json.dumps({"action": action, "version": 6, "params": params or {}}).encode("utf-8")
     req = urllib.request.Request(
         url,
         data=payload,
@@ -25,9 +23,7 @@ def ankiconnect_request(url: str, action: str, params: dict[str, Any] | None = N
 
 def store_media_file(url: str, local_path: str, filename_in_anki: str) -> str:
     b64 = base64.b64encode(Path(local_path).read_bytes()).decode("utf-8")
-    return ankiconnect_request(
-        url, "storeMediaFile", {"filename": filename_in_anki, "data": b64}
-    )
+    return ankiconnect_request(url, "storeMediaFile", {"filename": filename_in_anki, "data": b64})
 
 
 def find_notes(url: str, query: str) -> list[int]:
