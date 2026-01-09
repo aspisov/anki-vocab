@@ -1,3 +1,11 @@
+help:
+	@echo "Makefile commands:"
+	@echo "  run                 - Run the Anki Vocab application"
+	@echo "  fmt                 - Format the code using pre-commit"
+	@echo "  test                - Run the test suite"
+	@echo "  build               - Build the package"
+	@echo "  release-testpypi   - Release the package to TestPyPI"
+	@echo "  release-pypi       - Release the package to PyPI"
 run:
 	uv run anki-vocab
 fmt:
