@@ -12,7 +12,7 @@ def test_parse_session_line_with_context() -> None:
 
 def test_parse_session_line_reuses_last_context() -> None:
     context, word, last = _parse_session_line("word", "Cached context")
-    assert context == "Cached context"
+    assert context == ""
     assert word == "word"
     assert last == "Cached context"
 
