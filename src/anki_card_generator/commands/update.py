@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Any
+from typing import Annotated, Any
 
 import typer
 from rich.console import Console
@@ -18,15 +18,6 @@ from ..integrations.ankiconnect import (
 )
 from ..integrations.openai_client import generate_card
 from .utils import confirm_menu, note_field_value, select_note_id
-
-
-_POLICIES = {"ask", "never", "always"}
-
-
-def _validate_policy(value: str, name: str) -> str:
-    if value not in _POLICIES:
-        raise typer.BadParameter(f"{name} must be one of: ask, never, always")
-    return value
 
 
 def _resolve_note_id(
@@ -65,24 +56,24 @@ def _resolve_note_id(
 
 
 def update_command(
-    word: str | None = typer.Option(None, "--word", help="Word/phrase to update."),
-    note_id: int | None = typer.Option(None, "--note-id", help="Specific Anki note id."),
-    sentence: str | None = typer.Option(
-        None, "--sentence", help="Context sentence (defaults to note field)."
-    ),
-    note_model: str | None = typer.Option(
-        None, "--note-model", help="Anki note model name."
-    ),
-    openai_model: str | None = typer.Option(
-        None, "--openai-model", help="OpenAI model name."
-    ),
-    voice: str | None = typer.Option(None, "--voice", help="Edge TTS voice."),
-    rate: str | None = typer.Option(None, "--rate", help="Edge TTS rate."),
-    overwrite_audio: str | None = typer.Option(
-        None, "--overwrite-audio", help="ask|never|always"
-    ),
-    no_tts: bool = typer.Option(False, "--no-tts", help="Disable TTS."),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview only, no writes."),
+    word: Annotated[str | None, typer.Option("--word", help="Word/phrase to update.")] = None,
+    note_id: Annotated[
+        int | None, typer.Option("--note-id", help="Specific Anki note id.")
+    ] = None,
+    sentence: Annotated[
+        str | None,
+        typer.Option("--sentence", help="Context sentence (defaults to note field)."),
+    ] = None,
+    note_model: Annotated[
+        str | None, typer.Option("--note-model", help="Anki note model name.")
+    ] = None,
+    openai_model: Annotated[
+        str | None, typer.Option("--openai-model", help="OpenAI model name.")
+    ] = None,
+    voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
+    rate: Annotated[str | None, typer.Option("--rate", help="Edge TTS rate.")] = None,
+    no_tts: Annotated[bool, typer.Option("--no-tts", help="Disable TTS.")] = False,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Preview only, no writes.")] = False,
 ) -> None:
     config = resolve_config()
     config = replace(
@@ -92,9 +83,6 @@ def update_command(
         tts_voice=voice or config.tts_voice,
         tts_rate=rate or config.tts_rate,
         tts_enabled=(not no_tts) and config.tts_enabled,
-        session_overwrite_audio=_validate_policy(
-            overwrite_audio or config.session_overwrite_audio, "overwrite-audio"
-        ),
     )
 
     note_id_value, note = _resolve_note_id(config, word=word, note_id=note_id)
@@ -133,11 +121,7 @@ def update_command(
 
     if config.tts_enabled:
         existing_audio = note_field_value(note, config.tts_field)
-        should_overwrite = config.session_overwrite_audio == "always"
-        if config.session_overwrite_audio == "ask" and existing_audio:
-            should_overwrite = confirm_menu("Overwrite audio?", default_yes=False)
-
-        if not existing_audio or should_overwrite:
+        if not existing_audio:
             tts_text = card.tts_text or card.word_base
             audio_field_value = build_audio_field(
                 config.ankiconnect_url,

@@ -1,4 +1,5 @@
 import json
+from typing import Annotated
 
 import typer
 
@@ -15,7 +16,9 @@ config_app = typer.Typer(help="Manage configuration.")
 
 
 @config_app.command("init")
-def config_init(force: bool = typer.Option(False, "--force", help="Overwrite config.")) -> None:
+def config_init(
+    force: Annotated[bool, typer.Option("--force", help="Overwrite config.")] = False,
+) -> None:
     path = config_path()
     if path.exists() and not force:
         raise typer.BadParameter("Config file already exists. Use --force to overwrite.")
