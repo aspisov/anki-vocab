@@ -10,7 +10,7 @@ from ..core.config import Config, resolve_config
 from ..core.prompting import format_card_for_display
 from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
 from ..integrations.openai_client import generate_card
-from .utils import select_note_id
+from .utils import confirm_menu, select_menu, select_note_id
 
 
 _POLICIES = {"ask", "never", "always"}
@@ -45,9 +45,12 @@ def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, 
     if not word:
         raise ValueError("Provide a word/phrase after the separator.")
     if not context:
-        if not last_context:
-            raise ValueError("Context is missing. Use ':context ...' or include it before '|'.")
-        context = last_context
+        if "|" in stripped:
+            if not last_context:
+                raise ValueError(
+                    "Context is missing. Use ':context ...' or include it before '|'."
+                )
+            context = last_context
     else:
         last_context = context
 
@@ -158,14 +161,16 @@ def session_command(
         if yes:
             action = default_action
         else:
-            options = "a)dd, u)pdate, s)kip, r)egen, q)uit"
-            prompt = f"Action [{default_action}] ({options}): "
-            try:
-                response = input(prompt).strip().lower()
-            except EOFError:
-                typer.echo("Cancelled.", err=True)
-                return
-            action = response or default_action
+            actions = ["Add", "Update", "Skip", "Regenerate", "Quit"]
+            action_map = ["a", "u", "s", "r", "q"]
+            default_index = action_map.index(default_action)
+            selected = select_menu(
+                "Choose an action",
+                actions,
+                hint="Use ↑/↓ and Enter.",
+                default_index=default_index,
+            )
+            action = action_map[selected]
 
         if action == "q":
             return
@@ -223,12 +228,7 @@ def session_command(
         if config.tts_enabled and tts_text:
             should_overwrite = config.session_overwrite_audio == "always"
             if config.session_overwrite_audio == "ask" and existing_audio:
-                try:
-                    overwrite_choice = input("Overwrite audio? [y/N]: ").strip().lower()
-                except EOFError:
-                    typer.echo("Cancelled.", err=True)
-                    return
-                should_overwrite = overwrite_choice in {"y", "yes"}
+                should_overwrite = confirm_menu("Overwrite audio?", default_yes=False)
 
             if not existing_audio or should_overwrite:
                 fields[config.tts_field] = build_audio_field(
