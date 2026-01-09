@@ -93,7 +93,12 @@ def update_command(
 
     sentence_clean = clean_context(sentence)
     try:
-        card = generate_card(sentence_clean, existing_word, model=config.openai_model)
+        card = generate_card(
+            sentence_clean,
+            existing_word,
+            model=config.openai_model,
+            api_key=config.openai_api_key,
+        )
     except Exception as exc:
         typer.echo(f"OpenAI error: {exc}", err=True)
         raise typer.Exit(code=4) from exc

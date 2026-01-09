@@ -26,6 +26,7 @@ class Config:
     note_model: str
     field_map: dict[str, str]
     ankiconnect_url: str
+    openai_api_key: str
     openai_model: str
     tts_voice: str
     tts_rate: str
@@ -38,6 +39,7 @@ DEFAULT_CONFIG = Config(
     note_model="English",
     field_map=DEFAULT_FIELD_MAP,
     ankiconnect_url="http://127.0.0.1:8765",
+    openai_api_key="",
     openai_model="gpt-5.2",
     tts_voice="en-US-AvaNeural",
     tts_rate="+0%",
@@ -50,6 +52,7 @@ DEFAULT_CONFIG_DICT = {
     "note_model": DEFAULT_CONFIG.note_model,
     "field_map": DEFAULT_FIELD_MAP,
     "ankiconnect_url": DEFAULT_CONFIG.ankiconnect_url,
+    "openai_api_key": DEFAULT_CONFIG.openai_api_key,
     "openai_model": DEFAULT_CONFIG.openai_model,
     "tts": {
         "voice": DEFAULT_CONFIG.tts_voice,
@@ -98,6 +101,7 @@ def resolve_config() -> Config:
         "ANKI_VOCAB_DECK": ("deck", str),
         "ANKI_VOCAB_NOTE_MODEL": ("note_model", str),
         "ANKI_VOCAB_ANKICONNECT_URL": ("ankiconnect_url", str),
+        "ANKI_VOCAB_OPENAI_API_KEY": ("openai_api_key", str),
         "ANKI_VOCAB_OPENAI_MODEL": ("openai_model", str),
         "ANKI_VOCAB_TTS_VOICE": ("tts.voice", str),
         "ANKI_VOCAB_TTS_RATE": ("tts.rate", str),
@@ -129,6 +133,7 @@ def resolve_config() -> Config:
         note_model=str(merged.get("note_model", DEFAULT_CONFIG.note_model)),
         field_map={str(k): str(v) for k, v in field_map.items()},
         ankiconnect_url=str(merged.get("ankiconnect_url", DEFAULT_CONFIG.ankiconnect_url)),
+        openai_api_key=str(merged.get("openai_api_key", DEFAULT_CONFIG.openai_api_key)),
         openai_model=str(merged.get("openai_model", DEFAULT_CONFIG.openai_model)),
         tts_voice=str(tts_config.get("voice", DEFAULT_CONFIG.tts_voice)),
         tts_rate=str(tts_config.get("rate", DEFAULT_CONFIG.tts_rate)),
@@ -165,6 +170,7 @@ def config_as_dict(config: Config) -> dict[str, Any]:
         "note_model": config.note_model,
         "field_map": dict(config.field_map),
         "ankiconnect_url": config.ankiconnect_url,
+        "openai_api_key": config.openai_api_key,
         "openai_model": config.openai_model,
         "tts": {
             "voice": config.tts_voice,

@@ -111,7 +111,12 @@ def session_command(
         existing_note_ids: list[int] = []
 
         try:
-            card = generate_card(context_clean, word, model=config.openai_model)
+            card = generate_card(
+                context_clean,
+                word,
+                model=config.openai_model,
+                api_key=config.openai_api_key,
+            )
         except Exception as exc:
             typer.echo(f"OpenAI error: {exc}", err=True)
             continue

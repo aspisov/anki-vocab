@@ -17,6 +17,7 @@ pip install anki-vocab
 ### Setup
 
 - Put `OPENAI_API_KEY=...` in `.env` (project root) or export it in your shell.
+- Or set in config: `uv run anki-vocab config set openai_api_key YOUR_KEY`.
 - Ensure AnkiConnect is running at `http://127.0.0.1:8765`.
 - Optional: initialize config with `uv run anki-vocab config init`.
 

@@ -10,6 +10,7 @@ from .commands.config import (
 from .commands.session import session_command
 from .commands.update import update_command
 from .commands.utils import select_menu
+from .core.config import config_path, resolve_config, update_config_value
 
 app = typer.Typer(
     help="CLI for generating and maintaining Anki vocab cards.",
@@ -24,6 +25,14 @@ app.add_typer(config_app, name="config")
 def main(ctx: typer.Context) -> None:
     if ctx.invoked_subcommand is not None:
         return
+
+    config = resolve_config()
+    if not config.openai_api_key:
+        typer.echo("OpenAI API key is not set.")
+        api_key = input("Enter OpenAI API key: ").strip()
+        if not api_key:
+            raise typer.Exit(code=1)
+        update_config_value(config_path(), "openai_api_key", api_key)
 
     choice = select_menu(
         "Choose a command",

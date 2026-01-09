@@ -11,9 +11,10 @@ def _read_system_prompt() -> str:
     return resources.files("anki_card_generator").joinpath("system_prompt.jinja").read_text(encoding="utf-8").strip()
 
 
-def generate_card(sentence: str, word: str, *, model: str) -> Card:
+def generate_card(sentence: str, word: str, *, model: str, api_key: str | None) -> Card:
     load_dotenv()
-    client = OpenAI()
+    resolved_key = api_key.strip() if api_key else ""
+    client = OpenAI(api_key=resolved_key or None)
 
     content = (
         client.chat.completions.create(
