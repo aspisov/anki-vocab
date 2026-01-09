@@ -16,7 +16,7 @@ from ..integrations.ankiconnect import (
     update_note_fields,
 )
 from ..integrations.openai_client import generate_card
-from .utils import note_field_value, select_note_id
+from .utils import confirm_menu, note_field_value, select_note_id
 
 
 _POLICIES = {"ask", "never", "always"}
@@ -123,12 +123,7 @@ def update_command(
     if dry_run:
         return
 
-    try:
-        choice = input("Update this note? [y/N]: ").strip().lower()
-    except EOFError:
-        typer.echo("Cancelled.", err=True)
-        return
-    if choice not in {"y", "yes"}:
+    if not confirm_menu("Update this note?", default_yes=False):
         typer.echo("Skipped.", err=True)
         return
 
@@ -138,12 +133,7 @@ def update_command(
         existing_audio = note_field_value(note, config.tts_field)
         should_overwrite = config.session_overwrite_audio == "always"
         if config.session_overwrite_audio == "ask" and existing_audio:
-            try:
-                overwrite_choice = input("Overwrite audio? [y/N]: ").strip().lower()
-            except EOFError:
-                typer.echo("Cancelled.", err=True)
-                return
-            should_overwrite = overwrite_choice in {"y", "yes"}
+            should_overwrite = confirm_menu("Overwrite audio?", default_yes=False)
 
         if not existing_audio or should_overwrite:
             tts_text = card.tts_text or card.word_base
