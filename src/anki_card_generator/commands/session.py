@@ -1,25 +1,20 @@
 from __future__ import annotations
 
 from dataclasses import replace
+from typing import Annotated
+
 import typer
 
 from ..core.ankimapping import card_to_fields, word_field_name
 from ..core.audio import build_audio_field
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
-from ..core.prompting import format_card_for_display
+from rich.console import Console
+
+from ..core.prompting import render_card
 from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
 from ..integrations.openai_client import generate_card
-from .utils import confirm_menu, select_menu, select_note_id
-
-
-_POLICIES = {"ask", "never", "always"}
-
-
-def _validate_policy(value: str, name: str) -> str:
-    if value not in _POLICIES:
-        raise typer.BadParameter(f"{name} must be one of: ask, never, always")
-    return value
+from .utils import select_menu, select_note_id
 
 
 def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, str | None]:
@@ -71,24 +66,18 @@ def _pick_existing_note(
 
 
 def session_command(
-    deck: str | None = typer.Option(None, "--deck", help="Target Anki deck."),
-    note_model: str | None = typer.Option(
-        None, "--note-model", help="Anki note model name."
-    ),
-    openai_model: str | None = typer.Option(
-        None, "--openai-model", help="OpenAI model name."
-    ),
-    voice: str | None = typer.Option(None, "--voice", help="Edge TTS voice."),
-    rate: str | None = typer.Option(None, "--rate", help="Edge TTS rate."),
-    yes: bool = typer.Option(False, "--yes", help="Auto-accept default actions."),
-    update_policy: str | None = typer.Option(
-        None, "--update-policy", help="ask|never|always"
-    ),
-    overwrite_audio: str | None = typer.Option(
-        None, "--overwrite-audio", help="ask|never|always"
-    ),
-    no_tts: bool = typer.Option(False, "--no-tts", help="Disable TTS."),
-    dry_run: bool = typer.Option(False, "--dry-run", help="Preview only, no writes."),
+    deck: Annotated[str | None, typer.Option("--deck", help="Target Anki deck.")] = None,
+    note_model: Annotated[
+        str | None, typer.Option("--note-model", help="Anki note model name.")
+    ] = None,
+    openai_model: Annotated[
+        str | None, typer.Option("--openai-model", help="OpenAI model name.")
+    ] = None,
+    voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
+    rate: Annotated[str | None, typer.Option("--rate", help="Edge TTS rate.")] = None,
+    yes: Annotated[bool, typer.Option("--yes", help="Auto-accept default actions.")] = False,
+    no_tts: Annotated[bool, typer.Option("--no-tts", help="Disable TTS.")] = False,
+    dry_run: Annotated[bool, typer.Option("--dry-run", help="Preview only, no writes.")] = False,
 ) -> None:
     config = resolve_config()
     config = replace(
@@ -99,15 +88,10 @@ def session_command(
         tts_voice=voice or config.tts_voice,
         tts_rate=rate or config.tts_rate,
         tts_enabled=(not no_tts) and config.tts_enabled,
-        session_update_policy=_validate_policy(
-            update_policy or config.session_update_policy, "update-policy"
-        ),
-        session_overwrite_audio=_validate_policy(
-            overwrite_audio or config.session_overwrite_audio, "overwrite-audio"
-        ),
     )
 
     last_context: str | None = None
+    console = Console(stderr=True)
     typer.echo("Session started. Use ':context ...' or ':quit'.", err=True)
 
     while True:
@@ -129,21 +113,13 @@ def session_command(
         context_clean = clean_context(context)
         existing_note_ids: list[int] = []
 
-        if not dry_run and config.session_update_policy == "never":
-            word_field = word_field_name(config.field_map)
-            query = f'note:"{config.note_model}" {word_field}:"{word}"'
-            existing_note_ids = find_notes(config.ankiconnect_url, query)
-            if existing_note_ids:
-                typer.echo("Skipping: note already exists.", err=True)
-                continue
-
         try:
             card = generate_card(context_clean, word, model=config.openai_model)
         except Exception as exc:
             typer.echo(f"OpenAI error: {exc}", err=True)
             continue
 
-        typer.echo(format_card_for_display(card), err=True)
+        render_card(console, card)
 
         if dry_run:
             continue
@@ -154,9 +130,7 @@ def session_command(
             existing_note_ids = find_notes(config.ankiconnect_url, query)
 
         has_existing = bool(existing_note_ids)
-        default_action = "a"
-        if has_existing:
-            default_action = "u" if config.session_update_policy == "always" else "s"
+        default_action = "a" if not has_existing else "s"
 
         if yes:
             action = default_action
@@ -226,11 +200,7 @@ def session_command(
             existing_audio = notes[0]["fields"].get(config.tts_field, {}).get("value")
 
         if config.tts_enabled and tts_text:
-            should_overwrite = config.session_overwrite_audio == "always"
-            if config.session_overwrite_audio == "ask" and existing_audio:
-                should_overwrite = confirm_menu("Overwrite audio?", default_yes=False)
-
-            if not existing_audio or should_overwrite:
+            if not existing_audio:
                 fields[config.tts_field] = build_audio_field(
                     config.ankiconnect_url,
                     tts_text,

@@ -31,8 +31,6 @@ class Config:
     tts_rate: str
     tts_field: str
     tts_enabled: bool
-    session_update_policy: str
-    session_overwrite_audio: str
 
 
 DEFAULT_CONFIG = Config(
@@ -45,8 +43,6 @@ DEFAULT_CONFIG = Config(
     tts_rate="+0%",
     tts_field="Audio",
     tts_enabled=True,
-    session_update_policy="ask",
-    session_overwrite_audio="never",
 )
 
 DEFAULT_CONFIG_DICT = {
@@ -61,10 +57,7 @@ DEFAULT_CONFIG_DICT = {
         "field": DEFAULT_CONFIG.tts_field,
         "enabled": DEFAULT_CONFIG.tts_enabled,
     },
-    "session": {
-        "update_policy": DEFAULT_CONFIG.session_update_policy,
-        "overwrite_audio": DEFAULT_CONFIG.session_overwrite_audio,
-    },
+    "session": {},
 }
 
 
@@ -110,8 +103,6 @@ def resolve_config() -> Config:
         "ANKI_VOCAB_TTS_RATE": ("tts.rate", str),
         "ANKI_VOCAB_TTS_FIELD": ("tts.field", str),
         "ANKI_VOCAB_TTS_ENABLED": ("tts.enabled", _coerce_bool),
-        "ANKI_VOCAB_SESSION_UPDATE_POLICY": ("session.update_policy", str),
-        "ANKI_VOCAB_SESSION_OVERWRITE_AUDIO": ("session.overwrite_audio", str),
     }
 
     for env_name, (key, caster) in env_map.items():
@@ -129,8 +120,6 @@ def resolve_config() -> Config:
         raise ValueError("field_map must be a mapping in config")
 
     tts_config = merged.get("tts", {})
-    session_config = merged.get("session", {})
-
     tts_enabled = tts_config.get("enabled", True)
     if isinstance(tts_enabled, str):
         tts_enabled = _coerce_bool(tts_enabled)
@@ -145,12 +134,6 @@ def resolve_config() -> Config:
         tts_rate=str(tts_config.get("rate", DEFAULT_CONFIG.tts_rate)),
         tts_field=str(tts_config.get("field", DEFAULT_CONFIG.tts_field)),
         tts_enabled=bool(tts_enabled),
-        session_update_policy=str(
-            session_config.get("update_policy", DEFAULT_CONFIG.session_update_policy)
-        ),
-        session_overwrite_audio=str(
-            session_config.get("overwrite_audio", DEFAULT_CONFIG.session_overwrite_audio)
-        ),
     )
 
 
@@ -191,8 +174,5 @@ def config_as_dict(config: Config) -> dict[str, Any]:
             "field": config.tts_field,
             "enabled": config.tts_enabled,
         },
-        "session": {
-            "update_policy": config.session_update_policy,
-            "overwrite_audio": config.session_overwrite_audio,
-        },
+        "session": {},
     }

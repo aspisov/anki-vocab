@@ -41,7 +41,7 @@ Interactive loop for reading sessions. Single-line capture.
 **Flags**
 - `--yes` (auto-accept defaults; when exists, obey `update_policy`)
 - `--update-policy ask|never|always` (default `ask`)
-- `--overwrite-audio ask|never|always` (default `never`)
+- Audio is only added when the audio field is empty.
 - `--no-tts` (force disable TTS)
 - `--dry-run` (never writes to Anki; still generates + previews)
 
@@ -65,7 +65,7 @@ Manage config used by other commands.
 - `tts.voice`: Edge voice name (e.g. `en-US-JennyNeural`)
 - `tts.field`: field name to store `[sound:...]` reference
 - `tts.enabled`: bool
-- `session.update_policy`, `session.overwrite_audio`
+- `session.update_policy` (future)
 
 **Sources / precedence**
 CLI flags > env vars > config file > hardcoded defaults.

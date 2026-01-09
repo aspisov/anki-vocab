@@ -6,3 +6,4 @@
 - Refactored core logic into modules and introduced schema validation.
 - Added unit tests for parsing, cleaning, and schema handling.
 - Added Rich-powered menu prompts with arrow-key selection.
+- Removed overwrite-audio option; audio is added only when missing.
