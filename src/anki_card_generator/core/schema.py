@@ -52,15 +52,11 @@ def parse_card(payload: dict[str, Any]) -> Card:
     for key in CARD_REQUIRED_FIELDS:
         value = payload.get(key)
         if not isinstance(value, str) or not value.strip():
-            raise RuntimeError(
-                f"OpenAI returned invalid card JSON: {key!r} must be a non-empty string"
-            )
+            raise RuntimeError(f"OpenAI returned invalid card JSON: {key!r} must be a non-empty string")
 
     tts_text = payload.get("tts_text")
     if tts_text is not None and (not isinstance(tts_text, str) or not tts_text.strip()):
-        raise RuntimeError(
-            "OpenAI returned invalid card JSON: 'tts_text' must be a non-empty string"
-        )
+        raise RuntimeError("OpenAI returned invalid card JSON: 'tts_text' must be a non-empty string")
 
     return Card(
         word_base=payload["word_base"].strip(),

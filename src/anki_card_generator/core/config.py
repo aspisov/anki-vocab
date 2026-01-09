@@ -139,9 +139,7 @@ def resolve_config() -> Config:
 
 def write_default_config(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(
-        json.dumps(DEFAULT_CONFIG_DICT, indent=2, sort_keys=True), encoding="utf-8"
-    )
+    path.write_text(json.dumps(DEFAULT_CONFIG_DICT, indent=2, sort_keys=True), encoding="utf-8")
 
 
 def update_config_value(path: Path, key: str, value: str) -> None:

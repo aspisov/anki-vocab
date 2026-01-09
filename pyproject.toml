@@ -31,3 +31,6 @@ where = ["src"]
 
 [tool.setuptools.package-data]
 anki_card_generator = ["system_prompt.jinja"]
+
+[tool.ruff]
+line-length = 120

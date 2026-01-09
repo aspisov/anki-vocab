@@ -12,7 +12,12 @@ from ..core.config import Config, resolve_config
 from rich.console import Console
 
 from ..core.prompting import render_card
-from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
+from ..integrations.ankiconnect import (
+    add_note,
+    find_notes,
+    notes_info,
+    update_note_fields,
+)
 from ..integrations.openai_client import generate_card
 from .utils import select_menu, select_note_id
 
@@ -42,9 +47,7 @@ def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, 
     if not context:
         if "|" in stripped:
             if not last_context:
-                raise ValueError(
-                    "Context is missing. Use ':context ...' or include it before '|'."
-                )
+                raise ValueError("Context is missing. Use ':context ...' or include it before '|'.")
             context = last_context
     else:
         last_context = context
@@ -52,9 +55,7 @@ def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, 
     return context, word, last_context
 
 
-def _pick_existing_note(
-    config: Config, note_ids: list[int], *, allow_pick: bool
-) -> int | None:
+def _pick_existing_note(config: Config, note_ids: list[int], *, allow_pick: bool) -> int | None:
     if not note_ids:
         return None
     if len(note_ids) == 1 or not allow_pick:
@@ -67,12 +68,8 @@ def _pick_existing_note(
 
 def session_command(
     deck: Annotated[str | None, typer.Option("--deck", help="Target Anki deck.")] = None,
-    note_model: Annotated[
-        str | None, typer.Option("--note-model", help="Anki note model name.")
-    ] = None,
-    openai_model: Annotated[
-        str | None, typer.Option("--openai-model", help="OpenAI model name.")
-    ] = None,
+    note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
+    openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
     voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
     rate: Annotated[str | None, typer.Option("--rate", help="Edge TTS rate.")] = None,
     yes: Annotated[bool, typer.Option("--yes", help="Auto-accept default actions.")] = False,

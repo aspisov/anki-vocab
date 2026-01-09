@@ -1,5 +1,5 @@
 run:
-	uv run anki-card-generator
+	uv run anki-vocab
 fmt:
 	uv run pre-commit run --all-files
 test:

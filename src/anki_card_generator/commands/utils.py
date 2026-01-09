@@ -92,11 +92,14 @@ def select_menu(
             _CONSOLE.print("Invalid choice.", style="red")
 
     selected = max(0, min(default_index, len(options) - 1))
-    with _raw_mode(), Live(
-        _render_menu(title, hint, options, selected),
-        console=_CONSOLE,
-        refresh_per_second=30,
-    ) as live:
+    with (
+        _raw_mode(),
+        Live(
+            _render_menu(title, hint, options, selected),
+            console=_CONSOLE,
+            refresh_per_second=30,
+        ) as live,
+    ):
         while True:
             key = _read_key()
             if key is None:

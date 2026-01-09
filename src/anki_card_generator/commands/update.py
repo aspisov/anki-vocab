@@ -20,9 +20,7 @@ from ..integrations.openai_client import generate_card
 from .utils import confirm_menu, note_field_value, select_note_id
 
 
-def _resolve_note_id(
-    config: Config, *, word: str | None, note_id: int | None
-) -> tuple[int, dict[str, Any]]:
+def _resolve_note_id(config: Config, *, word: str | None, note_id: int | None) -> tuple[int, dict[str, Any]]:
     if note_id is not None:
         notes = notes_info(config.ankiconnect_url, [note_id])
         if not notes:
@@ -57,19 +55,13 @@ def _resolve_note_id(
 
 def update_command(
     word: Annotated[str | None, typer.Option("--word", help="Word/phrase to update.")] = None,
-    note_id: Annotated[
-        int | None, typer.Option("--note-id", help="Specific Anki note id.")
-    ] = None,
+    note_id: Annotated[int | None, typer.Option("--note-id", help="Specific Anki note id.")] = None,
     sentence: Annotated[
         str | None,
         typer.Option("--sentence", help="Context sentence (defaults to note field)."),
     ] = None,
-    note_model: Annotated[
-        str | None, typer.Option("--note-model", help="Anki note model name.")
-    ] = None,
-    openai_model: Annotated[
-        str | None, typer.Option("--openai-model", help="OpenAI model name.")
-    ] = None,
+    note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
+    openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
     voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
     rate: Annotated[str | None, typer.Option("--rate", help="Edge TTS rate.")] = None,
     no_tts: Annotated[bool, typer.Option("--no-tts", help="Disable TTS.")] = False,
@@ -96,9 +88,7 @@ def update_command(
     existing_sentence = note_field_value(note, sentence_field)
     if not sentence:
         if not existing_sentence:
-            raise typer.BadParameter(
-                "Provide --sentence because the note has no context sentence."
-            )
+            raise typer.BadParameter("Provide --sentence because the note has no context sentence.")
         sentence = existing_sentence
 
     sentence_clean = clean_context(sentence)
