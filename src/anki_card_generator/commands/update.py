@@ -4,12 +4,13 @@ from dataclasses import replace
 from typing import Any
 
 import typer
+from rich.console import Console
 
 from ..core.ankimapping import card_to_fields, word_field_name
 from ..core.audio import build_audio_field
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
-from ..core.prompting import format_card_for_display
+from ..core.prompting import render_card
 from ..integrations.ankiconnect import (
     find_notes,
     notes_info,
@@ -118,7 +119,8 @@ def update_command(
     except Exception as exc:
         typer.echo(f"OpenAI error: {exc}", err=True)
         raise typer.Exit(code=4) from exc
-    typer.echo(format_card_for_display(card), err=True)
+    console = Console(stderr=True)
+    render_card(console, card)
 
     if dry_run:
         return

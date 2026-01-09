@@ -7,7 +7,9 @@ from ..core.ankimapping import card_to_fields, word_field_name
 from ..core.audio import build_audio_field
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
-from ..core.prompting import format_card_for_display
+from rich.console import Console
+
+from ..core.prompting import render_card
 from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
 from ..integrations.openai_client import generate_card
 from .utils import confirm_menu, select_menu, select_note_id
@@ -108,6 +110,7 @@ def session_command(
     )
 
     last_context: str | None = None
+    console = Console(stderr=True)
     typer.echo("Session started. Use ':context ...' or ':quit'.", err=True)
 
     while True:
@@ -143,7 +146,7 @@ def session_command(
             typer.echo(f"OpenAI error: {exc}", err=True)
             continue
 
-        typer.echo(format_card_for_display(card), err=True)
+        render_card(console, card)
 
         if dry_run:
             continue
