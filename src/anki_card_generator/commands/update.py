@@ -1,0 +1,159 @@
+from __future__ import annotations
+
+from dataclasses import replace
+from typing import Any
+
+import typer
+
+from ..core.ankimapping import card_to_fields, word_field_name
+from ..core.audio import build_audio_field
+from ..core.cleaning import clean_context
+from ..core.config import Config, resolve_config
+from ..core.prompting import format_card_for_display
+from ..integrations.ankiconnect import (
+    find_notes,
+    notes_info,
+    update_note_fields,
+)
+from ..integrations.openai_client import generate_card
+from .utils import note_field_value, select_note_id
+
+
+_POLICIES = {"ask", "never", "always"}
+
+
+def _validate_policy(value: str, name: str) -> str:
+    if value not in _POLICIES:
+        raise typer.BadParameter(f"{name} must be one of: ask, never, always")
+    return value
+
+
+def _resolve_note_id(
+    config: Config, *, word: str | None, note_id: int | None
+) -> tuple[int, dict[str, Any]]:
+    if note_id is not None:
+        notes = notes_info(config.ankiconnect_url, [note_id])
+        if not notes:
+            raise typer.BadParameter(f"Note id {note_id} not found.")
+        return note_id, notes[0]
+
+    if not word:
+        raise typer.BadParameter("Provide --word or --note-id.")
+
+    word_field = word_field_name(config.field_map)
+    query = f'note:"{config.note_model}" {word_field}:"{word}"'
+    note_ids = find_notes(config.ankiconnect_url, query)
+    if not note_ids:
+        raise typer.BadParameter("No matching notes found.")
+
+    notes = notes_info(config.ankiconnect_url, note_ids)
+    if not notes:
+        raise typer.BadParameter("No matching notes found.")
+
+    if len(notes) == 1:
+        return int(notes[0]["noteId"]), notes[0]
+
+    selected = select_note_id(notes, config.field_map)
+    picked = next((note for note in notes if int(note["noteId"]) == selected), None)
+    if picked is None:
+        notes = notes_info(config.ankiconnect_url, [selected])
+        if not notes:
+            raise typer.BadParameter("Selected note id not found.")
+        return selected, notes[0]
+    return selected, picked
+
+
+def update_command(
+    word: str | None = typer.Option(None, "--word", help="Word/phrase to update."),
+    note_id: int | None = typer.Option(None, "--note-id", help="Specific Anki note id."),
+    sentence: str | None = typer.Option(
+        None, "--sentence", help="Context sentence (defaults to note field)."
+    ),
+    note_model: str | None = typer.Option(
+        None, "--note-model", help="Anki note model name."
+    ),
+    openai_model: str | None = typer.Option(
+        None, "--openai-model", help="OpenAI model name."
+    ),
+    voice: str | None = typer.Option(None, "--voice", help="Edge TTS voice."),
+    rate: str | None = typer.Option(None, "--rate", help="Edge TTS rate."),
+    overwrite_audio: str | None = typer.Option(
+        None, "--overwrite-audio", help="ask|never|always"
+    ),
+    no_tts: bool = typer.Option(False, "--no-tts", help="Disable TTS."),
+    dry_run: bool = typer.Option(False, "--dry-run", help="Preview only, no writes."),
+) -> None:
+    config = resolve_config()
+    config = replace(
+        config,
+        note_model=note_model or config.note_model,
+        openai_model=openai_model or config.openai_model,
+        tts_voice=voice or config.tts_voice,
+        tts_rate=rate or config.tts_rate,
+        tts_enabled=(not no_tts) and config.tts_enabled,
+        session_overwrite_audio=_validate_policy(
+            overwrite_audio or config.session_overwrite_audio, "overwrite-audio"
+        ),
+    )
+
+    note_id_value, note = _resolve_note_id(config, word=word, note_id=note_id)
+
+    word_field = config.field_map.get("word_base", "Word")
+    existing_word = note_field_value(note, word_field)
+    if not existing_word:
+        raise typer.BadParameter("Selected note is missing the word field.")
+
+    sentence_field = config.field_map.get("context_en", "Context Sentence")
+    existing_sentence = note_field_value(note, sentence_field)
+    if not sentence:
+        if not existing_sentence:
+            raise typer.BadParameter(
+                "Provide --sentence because the note has no context sentence."
+            )
+        sentence = existing_sentence
+
+    sentence_clean = clean_context(sentence)
+    try:
+        card = generate_card(sentence_clean, existing_word, model=config.openai_model)
+    except Exception as exc:
+        typer.echo(f"OpenAI error: {exc}", err=True)
+        raise typer.Exit(code=4) from exc
+    typer.echo(format_card_for_display(card), err=True)
+
+    if dry_run:
+        return
+
+    try:
+        choice = input("Update this note? [y/N]: ").strip().lower()
+    except EOFError:
+        typer.echo("Cancelled.", err=True)
+        return
+    if choice not in {"y", "yes"}:
+        typer.echo("Skipped.", err=True)
+        return
+
+    fields = card_to_fields(card, config.field_map)
+
+    if config.tts_enabled:
+        existing_audio = note_field_value(note, config.tts_field)
+        should_overwrite = config.session_overwrite_audio == "always"
+        if config.session_overwrite_audio == "ask" and existing_audio:
+            try:
+                overwrite_choice = input("Overwrite audio? [y/N]: ").strip().lower()
+            except EOFError:
+                typer.echo("Cancelled.", err=True)
+                return
+            should_overwrite = overwrite_choice in {"y", "yes"}
+
+        if not existing_audio or should_overwrite:
+            tts_text = card.tts_text or card.word_base
+            audio_field_value = build_audio_field(
+                config.ankiconnect_url,
+                tts_text,
+                voice=config.tts_voice,
+                rate=config.tts_rate,
+            )
+            fields[config.tts_field] = audio_field_value
+
+    update_note_fields(config.ankiconnect_url, note_id_value, fields)
+    typer.echo(f"Updated note id: {note_id_value}", err=True)

@@ -19,15 +19,13 @@ Output format (STRICT): return ONLY a single JSON object, no markdown, no extra 
 
 JSON schema (keys must match EXACTLY; all values must be strings):
 {
-  "Word": "base form (dictionary form)",
-  "Part of Speech": "noun | verb | adjective | idiom | phrasal verb",
-  "Russian Meaning": "short gloss (not a sentence)",
-  "Definition": "simple English, max 20 words",
-  "Context Sentence": "cleaned English sentence",
-  "Sentence Translation": "natural Russian translation of the sentence",
-  "Rarity": "Very common | Common | Uncommon | Rare | Literary/Academic + brief notes",
-  "CEFR": "A2 | B1 | B2 | C1 | C2",
-  "TTS Text": "what should be spoken (usually Word; include article for nouns if helpful)"
+  "word_base": "base form (dictionary form)",
+  "pos": "noun | verb | adjective | idiom | phrasal verb",
+  "ru_meaning": "short gloss (not a sentence)",
+  "definition": "simple English, max 20 words",
+  "context_en": "cleaned English sentence",
+  "context_ru": "natural Russian translation of the sentence",
+  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic + brief notes",
+  "cefr": "A2 | B1 | B2 | C1 | C2",
+  "tts_text": "what should be spoken (usually word_base; include article for nouns if helpful)"
 }
-
-
