@@ -45,9 +45,12 @@ def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, 
     if not word:
         raise ValueError("Provide a word/phrase after the separator.")
     if not context:
-        if not last_context:
-            raise ValueError("Context is missing. Use ':context ...' or include it before '|'.")
-        context = last_context
+        if "|" in stripped:
+            if not last_context:
+                raise ValueError(
+                    "Context is missing. Use ':context ...' or include it before '|'."
+                )
+            context = last_context
     else:
         last_context = context
 
