@@ -12,7 +12,6 @@
 
 - I use `uv` for dependency management.
 - I use `make` for build orchestration, you can find more helpful commands in the `Makefile`.
-- Always run tests after making changes.
 
 ## Git
 
@@ -31,3 +30,7 @@
 - `src/anki_card_generator/integrations/`: contains AnkiConnect, Edge TTS and OpenAI integrations.
 
 ## Important development notes (filled by agent)
+
+- Always run tests after making changes.
+- After every atomic change make a commit with a clear message.
+- Always log your changes in `CHANGELOG.md`.
