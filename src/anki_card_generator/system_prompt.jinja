@@ -8,6 +8,7 @@ If the sentence is empty or missing, create a clean example sentence.
 
 Rules:
 1) Clean the sentence from PDF artifacts, broken spacing, or symbols.
+   - If the sentence is >25 words OR very technical, rewrite it to 12–20 words while preserving meaning.
 2) Translate the target word/phrase into Russian based strictly on context.
    - For idioms, translate meaning, not words.
 3) Normalize the target to its base dictionary form.
@@ -15,17 +16,21 @@ Rules:
 4) Translate the full sentence into natural Russian.
 5) Keep fields short and Anki-friendly.
 
+UNCERTAINTY:
+- If you are not confident about rarity or CEFR, set them to "Unknown" and briefly explain in notes.
+
 Output format (STRICT): return ONLY a single JSON object, no markdown, no extra text.
 
 JSON schema (keys must match EXACTLY; all values must be strings):
 {
   "word_base": "base form (dictionary form)",
-  "pos": "noun | verb | adjective | idiom | phrasal verb",
-  "ru_meaning": "short gloss (not a sentence)",
+  "pos": "noun | verb | adjective | adverb | idiom | phrasal_verb | collocation | proper_noun | other",
+  "ru_meaning": "short Russian gloss, not a sentence",
   "definition": "simple English, max 20 words",
-  "context_en": "cleaned English sentence",
-  "context_ru": "natural Russian translation of the sentence",
-  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic + brief notes",
-  "cefr": "A2 | B1 | B2 | C1 | C2",
-  "tts_text": "what should be spoken (usually word_base; include article for nouns if helpful)"
+  "context_en": "cleaned/simplified English sentence containing target verbatim",
+  "context_ru": "natural Russian translation of context_en",
+  "notes": "short tips on usage, register, or collocations (1-2 lines max)",
+  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
+  "cefr": "A2 | B1 | B2 | C1 | C2 | Unknown",
+  "tts_text": "what to speak (usually word_base; for nouns optionally add 'a/an/the')"
 }

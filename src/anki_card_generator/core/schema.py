@@ -9,6 +9,7 @@ CARD_REQUIRED_FIELDS = (
     "definition",
     "context_en",
     "context_ru",
+    "notes",
     "rarity",
     "cefr",
 )
@@ -24,6 +25,7 @@ class Card:
     definition: str
     context_en: str
     context_ru: str
+    notes: str
     rarity: str
     cefr: str
     tts_text: str | None = None
@@ -36,6 +38,7 @@ class Card:
             "definition": self.definition,
             "context_en": self.context_en,
             "context_ru": self.context_ru,
+            "notes": self.notes,
             "rarity": self.rarity,
             "cefr": self.cefr,
         }
@@ -65,6 +68,7 @@ def parse_card(payload: dict[str, Any]) -> Card:
         definition=payload["definition"].strip(),
         context_en=payload["context_en"].strip(),
         context_ru=payload["context_ru"].strip(),
+        notes=payload["notes"].strip(),
         rarity=payload["rarity"].strip(),
         cefr=payload["cefr"].strip(),
         tts_text=tts_text.strip() if isinstance(tts_text, str) else None,

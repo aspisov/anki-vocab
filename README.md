@@ -5,13 +5,14 @@ CLI for generating and maintaining Anki English vocabulary cards from a context 
 ### Install (PyPI)
 
 ```bash
-pipx install anki-vocab
+pipx install anki-vocab 
 ```
 
 Or:
 
 ```bash
-pip install anki-vocab
+pipx install -i https://test.pypi.org/simple/ anki-vocab --pip-args="--extra-index-url
+  https://pypi.org/simple" --force
 ```
 
 ### Setup
