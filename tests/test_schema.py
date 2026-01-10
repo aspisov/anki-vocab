@@ -16,6 +16,7 @@ def test_parse_card_accepts_valid_payload() -> None:
         "definition": "a simple test",
         "context_en": "This is a test.",
         "context_ru": "Это тест.",
+        "notes": "Often used in education or QA contexts.",
         "rarity": "Common",
         "cefr": "B1",
         "tts_text": "test",

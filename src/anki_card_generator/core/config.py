@@ -14,6 +14,7 @@ DEFAULT_FIELD_MAP = {
     "definition": "Definition",
     "context_en": "Context Sentence",
     "context_ru": "Sentence Translation",
+    "notes": "Notes",
     "rarity": "Rarity",
     "cefr": "CEFR",
     "audio": "Audio",

@@ -11,6 +11,7 @@ CARD_DISPLAY_ORDER = (
     "definition",
     "context_en",
     "context_ru",
+    "notes",
     "rarity",
     "cefr",
     "tts_text",

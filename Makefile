@@ -15,6 +15,6 @@ test:
 build:
 	uv run python -m build
 release-testpypi: build
-	uv run python -m twine upload --repository testpypi dist/*
+	uv run python -m twine upload --repository testpypi dist/* --verbose
 release-pypi: build
 	uv run python -m twine upload dist/*
