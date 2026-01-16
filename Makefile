@@ -13,8 +13,9 @@ fmt:
 test:
 	uv run pytest tests
 build:
+	rm -rf dist/
 	uv run python -m build
 release-testpypi: build
 	uv run python -m twine upload --repository testpypi dist/* --verbose
 release-pypi: build
-	uv run python -m twine upload dist/*
+	uv run python -m twine upload dist/* --verbose
