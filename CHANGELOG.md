@@ -9,3 +9,4 @@
 - Removed overwrite-audio option; audio is added only when missing.
 - Set max line length to 120 in Ruff configuration.
 - Added regeneration feedback flow with prior attempts passed to the model and updated prompt guidance for synonyms and Russian input handling.
+- Prefer American English in prompt guidance.
