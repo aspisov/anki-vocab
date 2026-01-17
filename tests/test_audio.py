@@ -1,6 +1,6 @@
 from pathlib import Path
 
-from anki_card_generator.core import audio
+from anki_vocab.core import audio
 
 
 def test_build_audio_field_cleans_temp_file(monkeypatch) -> None:

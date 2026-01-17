@@ -46,7 +46,7 @@ uv run anki-vocab session --dry-run
 ### Alternative entrypoints
 
 ```bash
-uv run python -m anki_card_generator
+uv run python -m anki_vocab
 uv run python main.py
 ```
 

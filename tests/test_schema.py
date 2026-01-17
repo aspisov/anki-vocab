@@ -1,6 +1,6 @@
 import pytest
 
-from anki_card_generator.core.schema import parse_card
+from anki_vocab.core.schema import parse_card
 
 
 def test_parse_card_requires_fields() -> None:

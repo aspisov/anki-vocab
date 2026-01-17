@@ -1,6 +1,6 @@
 import pytest
 
-from anki_card_generator.commands.session import _parse_session_line
+from anki_vocab.commands.session import _parse_session_line
 
 
 def test_parse_session_line_with_context() -> None:
