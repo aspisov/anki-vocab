@@ -6,7 +6,7 @@ from typing import Annotated, Any
 import typer
 from rich.console import Console
 
-from ..core.ankimapping import card_to_fields, word_field_name
+from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
 from ..core.audio import build_audio_field
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
@@ -53,6 +53,16 @@ def _resolve_note_id(config: Config, *, word: str | None, note_id: int | None) -
     return selected, picked
 
 
+def _prompt_note_id() -> int:
+    while True:
+        raw = input("Note id: ").strip()
+        if raw.lower() in {"q", "quit"}:
+            raise typer.Abort()
+        if raw.isdigit():
+            return int(raw)
+        typer.echo("Invalid note id.", err=True)
+
+
 def update_command(
     word: Annotated[str | None, typer.Option("--word", help="Word/phrase to update.")] = None,
     note_id: Annotated[int | None, typer.Option("--note-id", help="Specific Anki note id.")] = None,
@@ -60,6 +70,7 @@ def update_command(
         str | None,
         typer.Option("--sentence", help="Context sentence (defaults to note field)."),
     ] = None,
+    prompt: Annotated[str | None, typer.Option("--prompt", help="Instruction for updating the note.")] = None,
     note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
     openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
     voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
@@ -77,6 +88,9 @@ def update_command(
         tts_enabled=(not no_tts) and config.tts_enabled,
     )
 
+    if note_id is None and word is None:
+        note_id = _prompt_note_id()
+
     note_id_value, note = _resolve_note_id(config, word=word, note_id=note_id)
 
     word_field = config.field_map.get("word_base", "Word")
@@ -87,17 +101,18 @@ def update_command(
     sentence_field = config.field_map.get("context_en", "Context Sentence")
     existing_sentence = note_field_value(note, sentence_field)
     if not sentence:
-        if not existing_sentence:
-            raise typer.BadParameter("Provide --sentence because the note has no context sentence.")
-        sentence = existing_sentence
+        sentence = existing_sentence or ""
 
     sentence_clean = clean_context(sentence)
+    current_card = note_to_card_payload(note, config.field_map)
     try:
         card = generate_card(
             sentence_clean,
             existing_word,
             model=config.openai_model,
             api_key=config.openai_api_key,
+            current_card=current_card,
+            user_prompt=prompt,
         )
     except Exception as exc:
         typer.echo(f"OpenAI error: {exc}", err=True)

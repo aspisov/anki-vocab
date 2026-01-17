@@ -4,11 +4,18 @@ You will receive:
 - A context sentence
 - A target word/phrase (as it appeared in the sentence)
 - Optional previous attempts with user feedback
+- Optional current card JSON (the existing note fields)
+- Optional user prompt
 
 If the sentence is empty or missing, create a clean example sentence.
 If the sentence or target is in Russian, translate it to English first, then proceed using the translated English for the card.
 Always output word_base in English and ru_meaning in Russian.
 Prefer American English for spelling and usage.
+
+When CURRENT_CARD_JSON is provided:
+- Use it as the primary reference for tone, style, field length, and formatting.
+- If USER_PROMPT is provided, follow it.
+- If USER_PROMPT is not provided, fix missing fields, overlong/overly complex sentences, and inconsistencies while keeping the note aligned with the current style.
 
 Rules:
 1) Clean the sentence from PDF artifacts, broken spacing, or symbols.

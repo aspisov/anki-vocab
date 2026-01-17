@@ -30,15 +30,20 @@ def generate_card(
     model: str,
     api_key: str | None,
     attempts: list[dict[str, object]] | None = None,
+    current_card: dict[str, str] | None = None,
+    user_prompt: str | None = None,
 ) -> Card:
     _ensure_env_loaded()
     resolved_key = api_key.strip() if api_key else ""
     client = OpenAI(api_key=resolved_key or None)
 
-    user_content = f'SENTENCE: {sentence}\nTARGET: "{word}"'
-    if attempts:
-        attempts_payload = json.dumps(attempts, ensure_ascii=False)
-        user_content = f"{user_content}\nPREVIOUS_ATTEMPTS_JSON:\n{attempts_payload}"
+    user_content = _build_user_content(
+        sentence,
+        word,
+        attempts=attempts,
+        current_card=current_card,
+        user_prompt=user_prompt,
+    )
 
     content = (
         client.chat.completions.create(
@@ -59,3 +64,23 @@ def generate_card(
 
     payload = json.loads(content)
     return parse_card(payload)
+
+
+def _build_user_content(
+    sentence: str,
+    word: str,
+    *,
+    attempts: list[dict[str, object]] | None,
+    current_card: dict[str, str] | None,
+    user_prompt: str | None,
+) -> str:
+    user_content = f'SENTENCE: {sentence}\nTARGET: "{word}"'
+    if current_card is not None:
+        current_payload = json.dumps(current_card, ensure_ascii=False)
+        user_content = f"{user_content}\nCURRENT_CARD_JSON:\n{current_payload}"
+    if user_prompt:
+        user_content = f"{user_content}\nUSER_PROMPT:\n{user_prompt}"
+    if attempts:
+        attempts_payload = json.dumps(attempts, ensure_ascii=False)
+        user_content = f"{user_content}\nPREVIOUS_ATTEMPTS_JSON:\n{attempts_payload}"
+    return user_content
