@@ -1,4 +1,4 @@
-from anki_card_generator.core.cleaning import clean_context
+from anki_vocab.core.cleaning import clean_context
 
 
 def test_clean_context_collapses_whitespace() -> None:

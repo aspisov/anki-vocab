@@ -12,7 +12,7 @@ _ENV_LOADED = False
 
 @lru_cache(maxsize=1)
 def _system_prompt() -> str:
-    return resources.files("anki_card_generator").joinpath("system_prompt.jinja").read_text(encoding="utf-8").strip()
+    return resources.files("anki_vocab").joinpath("system_prompt.jinja").read_text(encoding="utf-8").strip()
 
 
 def _ensure_env_loaded() -> None:

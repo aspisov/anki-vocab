@@ -23,11 +23,11 @@
 
 ## Core Architecture
 
-### Runtime core (`src/anki_card_generator/`)
+### Runtime core (`src/anki_vocab/`)
 
-- `src/anki_card_generator/commands/`: contains CLI commands.
-- `src/anki_card_generator/core/`: contains the core
-- `src/anki_card_generator/integrations/`: contains AnkiConnect, Edge TTS and OpenAI integrations.
+- `src/anki_vocab/commands/`: contains CLI commands.
+- `src/anki_vocab/core/`: contains the core
+- `src/anki_vocab/integrations/`: contains AnkiConnect, Edge TTS and OpenAI integrations.
 
 ## Important development notes (filled by agent)
 

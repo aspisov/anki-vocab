@@ -161,16 +161,16 @@ Integration tests (opt-in):
 
 ## 8. File Layout (suggested)
 
-- `src/anki_vocab_cli/cli.py` (Typer app)
-- `src/anki_vocab_cli/commands/session.py`
-- `src/anki_vocab_cli/commands/update.py`
-- `src/anki_vocab_cli/commands/config.py`
-- `src/anki_vocab_cli/core/schema.py`
-- `src/anki_vocab_cli/core/prompting.py`
-- `src/anki_vocab_cli/core/cleaning.py`
-- `src/anki_vocab_cli/integrations/ankiconnect.py`
-- `src/anki_vocab_cli/integrations/openai_client.py`
-- `src/anki_vocab_cli/integrations/edge_tts.py`
+- `src/anki_vocab/cli.py` (Typer app)
+- `src/anki_vocab/commands/session.py`
+- `src/anki_vocab/commands/update.py`
+- `src/anki_vocab/commands/config.py`
+- `src/anki_vocab/core/schema.py`
+- `src/anki_vocab/core/prompting.py`
+- `src/anki_vocab/core/cleaning.py`
+- `src/anki_vocab/integrations/ankiconnect.py`
+- `src/anki_vocab/integrations/openai_client.py`
+- `src/anki_vocab/integrations/edge_tts.py`
 - `tests/...`
 
 ---
