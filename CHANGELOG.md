@@ -12,3 +12,4 @@
 - Prefer American English in prompt guidance.
 - Removed session `:context` support, cached the system prompt and `.env` loading, kept note lookup stable during regeneration, and cleaned up temp TTS files.
 - Renamed the Python package to `anki_vocab` and bumped version to 0.1.3 for TestPyPI.
+- Load `.env` in `Makefile` so release tasks can use TestPyPI credentials.

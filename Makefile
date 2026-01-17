@@ -1,3 +1,6 @@
+-include .env
+export
+
 help:
 	@echo "Makefile commands:"
 	@echo "  run                 - Run the Anki Vocab application"
