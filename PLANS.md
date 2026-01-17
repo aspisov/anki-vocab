@@ -13,8 +13,7 @@ Interactive loop for reading sessions. Single-line capture.
 
 **Input format**
 - `context sentence | word`
-- If context omitted: uses last context (set by previous input or `:context ...`).
-- `:context ...` sets current context without generating a card.
+- `word` (empty context)
 - `:quit` exits.
 
 **Loop (per item)**

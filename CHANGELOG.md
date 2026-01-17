@@ -10,3 +10,4 @@
 - Set max line length to 120 in Ruff configuration.
 - Added regeneration feedback flow with prior attempts passed to the model and updated prompt guidance for synonyms and Russian input handling.
 - Prefer American English in prompt guidance.
+- Removed session `:context` support, cached the system prompt and `.env` loading, kept note lookup stable during regeneration, and cleaned up temp TTS files.
