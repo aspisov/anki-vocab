@@ -98,7 +98,8 @@ def session_command(
             continue
 
         context_clean = clean_context(context)
-        attempts: list[dict[str, object]] = []
+        current_card: dict[str, str] | None = None
+        user_prompt: str | None = None
         existing_note_ids: list[int] | None = None
 
         while True:
@@ -108,7 +109,8 @@ def session_command(
                     word,
                     model=config.openai_model,
                     api_key=config.openai_api_key,
-                    attempts=attempts or None,
+                    current_card=current_card,
+                    user_prompt=user_prompt,
                 )
             except Exception as exc:
                 typer.echo(f"OpenAI error: {exc}", err=True)
@@ -145,7 +147,8 @@ def session_command(
                 return
             if action == "r":
                 feedback = input("Feedback for regeneration (optional): ").strip()
-                attempts.append({"card": card.as_dict(), "feedback": feedback})
+                current_card = card.as_dict()
+                user_prompt = feedback or None
                 continue
             if action == "s":
                 typer.echo("Skipped.", err=True)
