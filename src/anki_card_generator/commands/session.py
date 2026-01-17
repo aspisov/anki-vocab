@@ -22,15 +22,10 @@ from ..integrations.openai_client import generate_card
 from .utils import select_menu, select_note_id
 
 
-def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, str | None]:
+def _parse_session_line(line: str) -> tuple[str, str]:
     stripped = line.strip()
     if not stripped:
-        return "", "", last_context
-
-    if stripped.startswith(":context "):
-        return "", "", stripped[len(":context ") :].strip()
-    if stripped in {":context"}:
-        return "", "", last_context
+        return "", ""
     if stripped in {":quit", ":q"}:
         raise typer.Exit()
 
@@ -44,15 +39,11 @@ def _parse_session_line(line: str, last_context: str | None) -> tuple[str, str, 
 
     if not word:
         raise ValueError("Provide a word/phrase after the separator.")
-    if not context:
-        if "|" in stripped:
-            if not last_context:
-                raise ValueError("Context is missing. Use ':context ...' or include it before '|'.")
-            context = last_context
-    else:
-        last_context = context
 
-    return context, word, last_context
+    if not context and "|" in stripped:
+        raise ValueError("Context is missing. Include it before '|'.")
+
+    return context, word
 
 
 def _pick_existing_note(config: Config, note_ids: list[int], *, allow_pick: bool) -> int | None:
@@ -87,9 +78,8 @@ def session_command(
         tts_enabled=(not no_tts) and config.tts_enabled,
     )
 
-    last_context: str | None = None
     console = Console(stderr=True)
-    typer.echo("Session started. Use ':context ...' or ':quit'.", err=True)
+    typer.echo("Session started. Use ':quit'.", err=True)
 
     while True:
         try:
@@ -99,7 +89,7 @@ def session_command(
             return
 
         try:
-            context, word, last_context = _parse_session_line(line, last_context)
+            context, word = _parse_session_line(line)
         except ValueError as exc:
             typer.echo(str(exc), err=True)
             continue
@@ -109,9 +99,9 @@ def session_command(
 
         context_clean = clean_context(context)
         attempts: list[dict[str, object]] = []
+        existing_note_ids: list[int] | None = None
 
         while True:
-            existing_note_ids: list[int] = []
             try:
                 card = generate_card(
                     context_clean,
@@ -129,7 +119,7 @@ def session_command(
             if dry_run:
                 break
 
-            if not existing_note_ids:
+            if existing_note_ids is None:
                 word_field = word_field_name(config.field_map)
                 query = f'note:"{config.note_model}" {word_field}:"{card.word_base}"'
                 existing_note_ids = find_notes(config.ankiconnect_url, query)

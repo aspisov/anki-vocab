@@ -29,7 +29,7 @@ pipx install -i https://test.pypi.org/simple/ anki-vocab --pip-args="--extra-ind
 ```bash
 uv run anki-vocab session
 ```
-Use `context sentence | word`, `:context ...`, or `:quit`.
+Use `context sentence | word`, `word`, or `:quit`.
 
 - Update an existing card (pick duplicates if needed):
 
