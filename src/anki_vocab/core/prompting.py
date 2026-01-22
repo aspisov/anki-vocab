@@ -6,10 +6,13 @@ from .schema import Card
 
 CARD_DISPLAY_ORDER = (
     "word_base",
+    "target_surface",
     "pos",
     "ru_meaning",
     "definition",
+    "context_en_source",
     "context_en",
+    "cloze_en",
     "context_ru",
     "pattern",
     "synonyms",

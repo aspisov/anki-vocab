@@ -4,10 +4,13 @@ from typing import Any
 
 CARD_REQUIRED_FIELDS = (
     "word_base",
+    "target_surface",
     "pos",
     "ru_meaning",
     "definition",
+    "context_en_source",
     "context_en",
+    "cloze_en",
     "context_ru",
     "pattern",
     "synonyms",
@@ -22,10 +25,13 @@ CARD_OPTIONAL_FIELDS = ("tts_text",)
 @dataclass(frozen=True)
 class Card:
     word_base: str
+    target_surface: str
     pos: str
     ru_meaning: str
     definition: str
+    context_en_source: str
     context_en: str
+    cloze_en: str
     context_ru: str
     pattern: str
     synonyms: str
@@ -37,10 +43,13 @@ class Card:
     def as_dict(self) -> dict[str, str]:
         data = {
             "word_base": self.word_base,
+            "target_surface": self.target_surface,
             "pos": self.pos,
             "ru_meaning": self.ru_meaning,
             "definition": self.definition,
+            "context_en_source": self.context_en_source,
             "context_en": self.context_en,
+            "cloze_en": self.cloze_en,
             "context_ru": self.context_ru,
             "pattern": self.pattern,
             "synonyms": self.synonyms,
@@ -69,10 +78,13 @@ def parse_card(payload: dict[str, Any]) -> Card:
 
     return Card(
         word_base=payload["word_base"].strip(),
+        target_surface=payload["target_surface"].strip(),
         pos=payload["pos"].strip(),
         ru_meaning=payload["ru_meaning"].strip(),
         definition=payload["definition"].strip(),
+        context_en_source=payload["context_en_source"].strip(),
         context_en=payload["context_en"].strip(),
+        cloze_en=payload["cloze_en"].strip(),
         context_ru=payload["context_ru"].strip(),
         pattern=payload["pattern"].strip(),
         synonyms=payload["synonyms"].strip(),

@@ -1,19 +1,21 @@
-You are an expert linguist and translator creating high-quality Anki flashcards.
+You are an expert linguist creating Anki flashcards optimized for spaced repetition and fast review.
 
-You will receive:
-- A context sentence
-- A target word/phrase (as it appeared in the sentence)
+Input:
+- CONTEXT_SENTENCE (may contain PDF artifacts)
+- TARGET (exact substring as it appears in CONTEXT_SENTENCE)
 {% if has_current_card -%}
-- The current card JSON (existing note fields)
+- CURRENT_CARD_JSON (existing note fields)
 {% endif -%}
 {% if has_user_prompt -%}
-- A user prompt with update instructions
+- USER_PROMPT (update instructions)
 {% endif -%}
 
-If the sentence is empty or missing, create a clean example sentence.
-If the sentence or target is in Russian, translate it to English first, then proceed using the translated English for the card.
-Always output word_base in English and ru_meaning in Russian.
-Prefer American English for spelling and usage.
+General:
+- Prefer American English.
+- If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
+- If CONTEXT_SENTENCE or TARGET is Russian: translate to English first, then proceed.
+- Always output word_base in English and ru_meaning in Russian.
+- Keep everything Anki-friendly: short, unambiguous, high-recall cues.
 
 {% if has_current_card -%}
 When CURRENT_CARD_JSON is provided:
@@ -26,38 +28,51 @@ When CURRENT_CARD_JSON is provided:
 {% endif -%}
 
 Rules:
-1) Clean the sentence from PDF artifacts, broken spacing, or symbols.
-   - If the sentence is >25 words OR very technical, rewrite it to 12–20 words while preserving meaning.
-2) Translate the target word/phrase into Russian based strictly on context.
-   - For idioms, translate meaning, not words.
-3) Normalize the target to its base dictionary form.
-   - For idioms or fixed phrases, use the canonical idiomatic form.
-4) Translate the full sentence into natural Russian.
-5) Keep fields short and Anki-friendly.
-6) Include 2-4 English synonyms in the synonyms field.
-   - Synonyms must match the same part of speech and register and fit the context sentence with minimal edits.
-   - If not confident, set synonyms to "N/A".
-7) If the target takes a fixed preposition/particle or common pattern, fill the pattern field
-   (e.g., "compliance with + noun", "adhere to + noun/gerund", "piddle around").
-   If no clear pattern applies, set pattern to "N/A".
+1) Clean CONTEXT_SENTENCE into context_en: remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
+2) Identify target_surface EXACTLY as it appears in context_en_source (must match TARGET verbatim). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.
+3) Create context_en:
+   - If context_en_source > 25 words or very technical, rewrite to 12–20 words.
+   - Preserve the same meaning and the same sense of the target.
+   - Use natural English.
+4) Create cloze_en from context_en by replacing target_surface with “[...]”.
+5) Determine word_base (lemma/canonical form). For idioms/phrasal verbs/collocations, use canonical dictionary form.
+6) Determine pos using these rules:
+   - phrasal_verb: verb + particle(s) functioning as a unit (e.g., “phase out”)
+   - idiom: meaning not predictable from parts (e.g., “kick the bucket”)
+   - collocation: fixed/common pairing where meaning is mostly compositional (e.g., “pose a risk”)
+   - otherwise noun/verb/adjective/adverb/proper_noun/other
+7) ru_meaning: short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.
+8) definition: simple English definition, max 16 words, must match the context.
+9) context_ru: natural Russian translation of context_en.
+10) pattern:
+   - If a stable pattern applies (preposition/particle/argument structure), write it (e.g., “adhere to + noun”, “be prone to + noun/gerund”).
+   - Else “N/A”.
+11) synonyms:
+   - 2–4 synonyms that match POS and register AND could replace the target in context_en with minimal change.
+   - If not confident: “N/A”.
+12) notes (max 2 short lines):
+   - include at most one of: register, common collocation, or “don’t confuse with X”.
+13) rarity and cefr:
+   - If not confident, set to “Unknown” WITHOUT extra explanation.
 
-UNCERTAINTY:
-- If you are not confident about rarity or CEFR, set them to "Unknown" and briefly explain in notes.
+Output format: return ONLY a single JSON object, no markdown, no extra text.
+All values must be strings.
 
-Output format (STRICT): return ONLY a single JSON object, no markdown, no extra text.
-
-JSON schema (keys must match EXACTLY; all values must be strings):
+JSON:
 {
-  "word_base": "base form (dictionary form)",
-  "pos": "noun | verb | adjective | adverb | idiom | phrasal_verb | collocation | proper_noun | other",
-  "ru_meaning": "short Russian gloss, not a sentence",
-  "definition": "simple English, max 20 words",
-  "context_en": "cleaned/simplified English sentence containing target verbatim",
-  "context_ru": "natural Russian translation of context_en",
-  "pattern": "fixed preposition/particle pattern or N/A",
-  "synonyms": "2-4 English synonyms, comma-separated",
-  "notes": "short tips on usage, register, or collocations (1-2 lines max)",
-  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
-  "cefr": "A2 | B1 | B2 | C1 | C2 | Unknown",
-  "tts_text": "what to speak (usually word_base; for nouns optionally add 'a/an/the')"
+  "word_base": "...",
+  "target_surface": "...",
+  "pos": "...",
+  "ru_meaning": "...",
+  "definition": "...",
+  "context_en_source": "...",
+  "context_en": "...",
+  "cloze_en": "...",
+  "context_ru": "...",
+  "pattern": "...",
+  "synonyms": "...",
+  "notes": "...",
+  "rarity": "...",
+  "cefr": "...",
+  "tts_text": "..."
 }
