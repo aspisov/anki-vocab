@@ -35,6 +35,8 @@ Rules:
 4) Translate the full sentence into natural Russian.
 5) Keep fields short and Anki-friendly.
 6) Include 2-4 English synonyms in notes (prefix with "Synonyms:").
+7) If the target takes a fixed preposition/particle or common pattern, add a "Pattern:" line in notes
+   (e.g., "Pattern: compliance with + noun", "Pattern: adhere to + noun/gerund", "Pattern: piddle around").
 
 UNCERTAINTY:
 - If you are not confident about rarity or CEFR, set them to "Unknown" and briefly explain in notes.
@@ -49,7 +51,7 @@ JSON schema (keys must match EXACTLY; all values must be strings):
   "definition": "simple English, max 20 words",
   "context_en": "cleaned/simplified English sentence containing target verbatim",
   "context_ru": "natural Russian translation of context_en",
-  "notes": "short tips on usage, register, or collocations (1-2 lines max) + synonyms",
+  "notes": "short tips on usage, register, or collocations (1-2 lines max) + optional Pattern line + synonyms",
   "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
   "cefr": "A2 | B1 | B2 | C1 | C2 | Unknown",
   "tts_text": "what to speak (usually word_base; for nouns optionally add 'a/an/the')"
