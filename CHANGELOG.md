@@ -15,3 +15,6 @@
 - Load `.env` in `Makefile` so release tasks can use TestPyPI credentials.
 - Update command now prompts for note id, passes current note content to the model, and supports custom update prompts.
 - Simplified regeneration to use the same current-card and prompt context as updates, with system prompts rendered via Jinja.
+- Added pattern and synonyms fields to cards, with prompt guidance for fixed preposition/particle usage.
+- Tightened synonym guidance to require same POS/register and allow "N/A" when uncertain.
+- Added target surface, source context, and cloze fields to the card schema and config mapping.

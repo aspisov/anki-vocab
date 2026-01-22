@@ -11,11 +11,16 @@ def test_parse_card_requires_fields() -> None:
 def test_parse_card_accepts_valid_payload() -> None:
     payload = {
         "word_base": "test",
+        "target_surface": "test",
         "pos": "noun",
         "ru_meaning": "тест",
         "definition": "a simple test",
+        "context_en_source": "This is a test.",
         "context_en": "This is a test.",
+        "cloze_en": "This is a [...].",
         "context_ru": "Это тест.",
+        "pattern": "N/A",
+        "synonyms": "trial, exam",
         "notes": "Often used in education or QA contexts.",
         "rarity": "Common",
         "cefr": "B1",
