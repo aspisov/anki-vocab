@@ -15,13 +15,19 @@ General:
 - Source language is English.
 - Prefer American English.
 {% elif source_language == "es" -%}
-- Source language is Spanish: translate CONTEXT_SENTENCE and TARGET to English before proceeding.
+- Source language is Spanish. Produce the card in Spanish (all fields except ru_meaning/context_ru).
 {% else -%}
-- Source language is {{ source_language }}: translate CONTEXT_SENTENCE and TARGET to English before proceeding.
+- Source language is {{ source_language }}. Produce the card in that language (all fields except ru_meaning/context_ru).
 {% endif -%}
 - If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
-- If CONTEXT_SENTENCE or TARGET is Russian: translate to English first, then proceed.
-- Always output word_base in English and ru_meaning in Russian.
+- If CONTEXT_SENTENCE or TARGET is Russian: translate to the source language first, then proceed.
+- Always output ru_meaning in Russian.
+{% if source_language == "en" -%}
+- Output word_base and all non-Russian fields in English.
+{% else -%}
+- Output word_base and all non-Russian fields in the source language.
+{% endif -%}
+- Field names like context_en/cloze_en are legacy; still fill them using the source language.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
 
 {% if has_current_card -%}
@@ -35,9 +41,9 @@ When CURRENT_CARD_JSON is provided:
 {% endif -%}
 
 Rules:
-1) Clean CONTEXT_SENTENCE into context_en: remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
+1) Clean CONTEXT_SENTENCE into context_en (source language): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
 2) Identify target_surface EXACTLY as it appears in context_en_source (must match TARGET verbatim). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.
-3) Create context_en:
+3) Create context_en (source language):
    - If context_en_source > 25 words or very technical, rewrite to 12–20 words.
    - Preserve the same meaning and the same sense of the target.
    - Use natural English.
@@ -49,15 +55,15 @@ Rules:
    - collocation: fixed/common pairing where meaning is mostly compositional (e.g., “pose a risk”)
    - otherwise noun/verb/adjective/adverb/proper_noun/other
 7) ru_meaning: short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.
-8) definition: simple English definition, max 16 words, must match the context.
+8) definition: simple definition in the source language, max 16 words, must match the context.
 9) context_ru: natural Russian translation of context_en.
-10) pattern:
+10) pattern (source language):
    - If a stable pattern applies (preposition/particle/argument structure), write it (e.g., “adhere to + noun”, “be prone to + noun/gerund”).
    - Else “N/A”.
-11) synonyms:
+11) synonyms (source language):
    - 2–4 synonyms that match POS and register AND could replace the target in context_en with minimal change.
    - If not confident: “N/A”.
-12) notes (max 2 short lines):
+12) notes (max 2 short lines, source language):
    - include at most one of: register, common collocation, or “don’t confuse with X”.
 
 Output format: return ONLY a single JSON object, no markdown, no extra text.
