@@ -8,14 +8,14 @@ from typing import Any
 
 
 DEFAULT_FIELD_MAP = {
-    "word_base": "Word",
+    "lemma": "Word",
     "target_surface": "Target Surface",
     "pos": "Part of Speech",
-    "ru_meaning": "Russian Meaning",
+    "meaning_ru": "Russian Meaning",
     "definition": "Definition",
-    "context_en_source": "Context Sentence Source",
-    "context_en": "Context Sentence",
-    "cloze_en": "Cloze Sentence",
+    "context_source": "Context Sentence Source",
+    "context": "Context Sentence",
+    "cloze": "Cloze Sentence",
     "context_ru": "Sentence Translation",
     "pattern": "Pattern",
     "synonyms": "Synonyms",
@@ -32,6 +32,7 @@ class Config:
     note_model: str
     field_map: dict[str, str]
     ankiconnect_url: str
+    source_language: str
     openai_api_key: str
     openai_model: str
     tts_voice: str
@@ -45,6 +46,7 @@ DEFAULT_CONFIG = Config(
     note_model="English",
     field_map=DEFAULT_FIELD_MAP,
     ankiconnect_url="http://127.0.0.1:8765",
+    source_language="en",
     openai_api_key="",
     openai_model="gpt-5.2",
     tts_voice="en-US-AvaNeural",
@@ -58,6 +60,7 @@ DEFAULT_CONFIG_DICT = {
     "note_model": DEFAULT_CONFIG.note_model,
     "field_map": DEFAULT_FIELD_MAP,
     "ankiconnect_url": DEFAULT_CONFIG.ankiconnect_url,
+    "source_language": DEFAULT_CONFIG.source_language,
     "openai_api_key": DEFAULT_CONFIG.openai_api_key,
     "openai_model": DEFAULT_CONFIG.openai_model,
     "tts": {
@@ -107,6 +110,7 @@ def resolve_config() -> Config:
         "ANKI_VOCAB_DECK": ("deck", str),
         "ANKI_VOCAB_NOTE_MODEL": ("note_model", str),
         "ANKI_VOCAB_ANKICONNECT_URL": ("ankiconnect_url", str),
+        "ANKI_VOCAB_SOURCE_LANGUAGE": ("source_language", str),
         "ANKI_VOCAB_OPENAI_API_KEY": ("openai_api_key", str),
         "ANKI_VOCAB_OPENAI_MODEL": ("openai_model", str),
         "ANKI_VOCAB_TTS_VOICE": ("tts.voice", str),
@@ -139,6 +143,7 @@ def resolve_config() -> Config:
         note_model=str(merged.get("note_model", DEFAULT_CONFIG.note_model)),
         field_map={str(k): str(v) for k, v in field_map.items()},
         ankiconnect_url=str(merged.get("ankiconnect_url", DEFAULT_CONFIG.ankiconnect_url)),
+        source_language=str(merged.get("source_language", DEFAULT_CONFIG.source_language)),
         openai_api_key=str(merged.get("openai_api_key", DEFAULT_CONFIG.openai_api_key)),
         openai_model=str(merged.get("openai_model", DEFAULT_CONFIG.openai_model)),
         tts_voice=str(tts_config.get("voice", DEFAULT_CONFIG.tts_voice)),
@@ -176,6 +181,7 @@ def config_as_dict(config: Config) -> dict[str, Any]:
         "note_model": config.note_model,
         "field_map": dict(config.field_map),
         "ankiconnect_url": config.ankiconnect_url,
+        "source_language": config.source_language,
         "openai_api_key": config.openai_api_key,
         "openai_model": config.openai_model,
         "tts": {

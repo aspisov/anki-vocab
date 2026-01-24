@@ -16,7 +16,7 @@ def card_to_fields(card: Card, field_map: dict[str, str]) -> dict[str, str]:
 
 
 def word_field_name(field_map: dict[str, str]) -> str:
-    return field_map.get("word_base", "Word")
+    return field_map.get("lemma", "Word")
 
 
 def _note_field_value(note: dict[str, Any], field_name: str) -> str | None:

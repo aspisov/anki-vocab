@@ -111,6 +111,7 @@ def update_command(
             existing_word,
             model=config.openai_model,
             api_key=config.openai_api_key,
+            source_language=config.source_language,
             current_card=current_card,
             user_prompt=prompt,
         )
@@ -132,7 +133,7 @@ def update_command(
     if config.tts_enabled:
         existing_audio = note_field_value(note, config.tts_field)
         if not existing_audio:
-            tts_text = card.tts_text or card.word_base
+            tts_text = card.tts_text or card.lemma
             audio_field_value = build_audio_field(
                 config.ankiconnect_url,
                 tts_text,

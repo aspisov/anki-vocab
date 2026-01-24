@@ -18,3 +18,8 @@
 - Added pattern and synonyms fields to cards, with prompt guidance for fixed preposition/particle usage.
 - Tightened synonym guidance to require same POS/register and allow "N/A" when uncertain.
 - Added target surface, source context, and cloze fields to the card schema and config mapping.
+- Added configurable source language to drive prompt behavior for Spanish input.
+- Adjusted prompt language rules to be conditional on source language.
+- Updated prompt to produce card fields in the source language (non-Russian fields).
+- Added a dedicated Spanish system prompt template.
+- Renamed internal JSON fields to language-neutral keys (e.g., context/cloze/lemma).

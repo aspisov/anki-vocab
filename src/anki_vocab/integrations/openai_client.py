@@ -11,18 +11,20 @@ from ..core.schema import Card, parse_card
 _ENV_LOADED = False
 
 
-@lru_cache(maxsize=1)
-def _system_prompt_template() -> str:
-    return resources.files("anki_vocab").joinpath("system_prompt.jinja").read_text(encoding="utf-8")
+@lru_cache(maxsize=2)
+def _system_prompt_template(source_language: str) -> str:
+    template_name = "system_prompt_es.jinja" if source_language == "es" else "system_prompt.jinja"
+    return resources.files("anki_vocab").joinpath(template_name).read_text(encoding="utf-8")
 
 
 @lru_cache(maxsize=8)
-def _system_prompt(*, has_current_card: bool, has_user_prompt: bool) -> str:
+def _system_prompt(*, has_current_card: bool, has_user_prompt: bool, source_language: str) -> str:
     env = Environment(autoescape=False)
-    template = env.from_string(_system_prompt_template())
+    template = env.from_string(_system_prompt_template(source_language))
     return template.render(
         has_current_card=has_current_card,
         has_user_prompt=has_user_prompt,
+        source_language=source_language,
     ).strip()
 
 
@@ -40,6 +42,7 @@ def generate_card(
     *,
     model: str,
     api_key: str | None,
+    source_language: str,
     current_card: dict[str, str] | None = None,
     user_prompt: str | None = None,
 ) -> Card:
@@ -58,6 +61,7 @@ def generate_card(
                     "content": _system_prompt(
                         has_current_card=current_card is not None,
                         has_user_prompt=bool(user_prompt),
+                        source_language=source_language,
                     ),
                 },
                 {"role": "user", "content": user_content},

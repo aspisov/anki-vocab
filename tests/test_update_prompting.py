@@ -10,19 +10,19 @@ def test_note_to_card_payload_includes_mapped_fields_with_blanks() -> None:
         }
     }
     field_map = {
-        "word_base": "Word",
+        "lemma": "Word",
         "definition": "Definition",
-        "context_en": "Context Sentence",
+        "context": "Context Sentence",
         "pos": "Part of Speech",
     }
 
     payload = note_to_card_payload(note, field_map)
 
-    assert payload["word_base"] == "run"
+    assert payload["lemma"] == "run"
     assert payload["definition"] == "to move swiftly"
-    assert payload["context_en"] == ""
+    assert payload["context"] == ""
     assert payload["pos"] == ""
-    assert "ru_meaning" not in payload
+    assert "meaning_ru" not in payload
 
 
 def test_build_user_content_handles_optional_sections() -> None:
