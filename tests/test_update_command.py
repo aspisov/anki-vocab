@@ -77,6 +77,7 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(update_module, "update_note_fields", fake_update_note_fields)
     monkeypatch.setattr(update_module, "confirm_menu", lambda *args, **kwargs: True)
     monkeypatch.setattr(update_module, "render_card", lambda *args, **kwargs: None)
+    monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "q")
 
     update_module.update_command(note_id=123, prompt="Refine the definition.")
 

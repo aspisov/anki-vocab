@@ -31,7 +31,7 @@ uv run anki-vocab session
 ```
 Use `context sentence | word`, `word`, or `:quit`.
 
-- Update an existing card (by note id):
+- Update existing cards (loops for more note ids):
 
 ```bash
 uv run anki-vocab update --note-id 123456 --prompt "Refine the definition for academic usage."
