@@ -9,9 +9,12 @@ def test_system_prompt_mentions_pattern_notes() -> None:
     assert "target_surface" in prompt
     assert "register" in prompt
     assert "N/A" in prompt
+    assert "Source language is English" in prompt
+    assert "Prefer American English" in prompt
     assert "preposition" in prompt or "particle" in prompt
 
 
 def test_system_prompt_mentions_spanish_source_language() -> None:
     prompt = _system_prompt(has_current_card=False, has_user_prompt=False, source_language="es")
     assert "Source language is Spanish" in prompt
+    assert "Prefer American English" not in prompt

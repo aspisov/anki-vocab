@@ -11,13 +11,15 @@ Input:
 {% endif -%}
 
 General:
+{% if source_language == "en" -%}
+- Source language is English.
 - Prefer American English.
-- If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
-{% if source_language == "es" -%}
+{% elif source_language == "es" -%}
 - Source language is Spanish: translate CONTEXT_SENTENCE and TARGET to English before proceeding.
 {% else -%}
-- Source language is English.
+- Source language is {{ source_language }}: translate CONTEXT_SENTENCE and TARGET to English before proceeding.
 {% endif -%}
+- If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
 - If CONTEXT_SENTENCE or TARGET is Russian: translate to English first, then proceed.
 - Always output word_base in English and ru_meaning in Russian.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
