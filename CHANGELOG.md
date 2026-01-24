@@ -21,3 +21,4 @@
 - Added configurable source language to drive prompt behavior for Spanish input.
 - Adjusted prompt language rules to be conditional on source language.
 - Updated prompt to produce card fields in the source language (non-Russian fields).
+- Added a dedicated Spanish system prompt template.
