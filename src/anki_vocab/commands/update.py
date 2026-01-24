@@ -111,6 +111,7 @@ def update_command(
             existing_word,
             model=config.openai_model,
             api_key=config.openai_api_key,
+            source_language=config.source_language,
             current_card=current_card,
             user_prompt=prompt,
         )

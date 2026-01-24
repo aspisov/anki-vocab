@@ -13,6 +13,11 @@ Input:
 General:
 - Prefer American English.
 - If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
+{% if source_language == "es" -%}
+- Source language is Spanish: translate CONTEXT_SENTENCE and TARGET to English before proceeding.
+{% else -%}
+- Source language is English.
+{% endif -%}
 - If CONTEXT_SENTENCE or TARGET is Russian: translate to English first, then proceed.
 - Always output word_base in English and ru_meaning in Russian.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.

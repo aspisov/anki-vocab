@@ -109,6 +109,7 @@ def session_command(
                     word,
                     model=config.openai_model,
                     api_key=config.openai_api_key,
+                    source_language=config.source_language,
                     current_card=current_card,
                     user_prompt=user_prompt,
                 )
