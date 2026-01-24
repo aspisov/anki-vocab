@@ -62,9 +62,10 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
             }
         ]
 
-    def fake_generate_card(sentence: str, word: str, **_: Any) -> Card:
+    def fake_generate_card(sentence: str, word: str, **kwargs: Any) -> Card:
         captured["sentence"] = sentence
         captured["word"] = word
+        captured["prompt"] = kwargs.get("user_prompt")
         return _sample_card()
 
     def fake_update_note_fields(url: str, note_id: int, fields: dict[str, str]) -> None:
@@ -77,10 +78,10 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
     monkeypatch.setattr(update_module, "confirm_menu", lambda *args, **kwargs: True)
     monkeypatch.setattr(update_module, "render_card", lambda *args, **kwargs: None)
 
-    update_module.update_command(note_id=123)
+    update_module.update_command(note_id=123, prompt="Refine the definition.")
 
     assert captured["notes_info"]["note_ids"] == [123]
     assert captured["sentence"] == "I run."
     assert captured["word"] == "run"
+    assert captured["prompt"] == "Refine the definition."
     assert captured["update_note_fields"]["note_id"] == 123
-

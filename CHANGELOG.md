@@ -25,3 +25,4 @@
 - Renamed internal JSON fields to language-neutral keys (e.g., context/cloze/lemma).
 - Update command now only accepts `--note-id`, respects field-map keys for word/context, and keeps note lookup fresh after regenerations.
 - `config show` now redacts the OpenAI API key and the CLI avoids prompting for it in non-interactive sessions.
+- Update command now uses note context only and accepts only `--note-id` plus optional `--prompt`.

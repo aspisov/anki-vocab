@@ -21,10 +21,6 @@ from .utils import confirm_menu, note_field_value
 
 def update_command(
     note_id: Annotated[int, typer.Option("--note-id", help="Specific Anki note id.")],
-    sentence: Annotated[
-        str | None,
-        typer.Option("--sentence", help="Context sentence (defaults to note field)."),
-    ] = None,
     prompt: Annotated[str | None, typer.Option("--prompt", help="Instruction for updating the note.")] = None,
     note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
     openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
@@ -55,8 +51,7 @@ def update_command(
 
     sentence_field = config.field_map.get("context", "Context Sentence")
     existing_sentence = note_field_value(note, sentence_field)
-    if not sentence:
-        sentence = existing_sentence or ""
+    sentence = existing_sentence or ""
 
     sentence_clean = clean_context(sentence)
     current_card = note_to_card_payload(note, config.field_map)
