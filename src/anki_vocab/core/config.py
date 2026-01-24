@@ -8,14 +8,14 @@ from typing import Any
 
 
 DEFAULT_FIELD_MAP = {
-    "word_base": "Word",
+    "lemma": "Word",
     "target_surface": "Target Surface",
     "pos": "Part of Speech",
-    "ru_meaning": "Russian Meaning",
+    "meaning_ru": "Russian Meaning",
     "definition": "Definition",
-    "context_en_source": "Context Sentence Source",
-    "context_en": "Context Sentence",
-    "cloze_en": "Cloze Sentence",
+    "context_source": "Context Sentence Source",
+    "context": "Context Sentence",
+    "cloze": "Cloze Sentence",
     "context_ru": "Sentence Translation",
     "pattern": "Pattern",
     "synonyms": "Synonyms",

@@ -5,14 +5,14 @@ from .schema import Card
 
 
 CARD_DISPLAY_ORDER = (
-    "word_base",
+    "lemma",
     "target_surface",
     "pos",
-    "ru_meaning",
+    "meaning_ru",
     "definition",
-    "context_en_source",
-    "context_en",
-    "cloze_en",
+    "context_source",
+    "context",
+    "cloze",
     "context_ru",
     "pattern",
     "synonyms",

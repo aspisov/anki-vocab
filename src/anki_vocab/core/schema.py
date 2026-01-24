@@ -3,14 +3,14 @@ from typing import Any
 
 
 CARD_REQUIRED_FIELDS = (
-    "word_base",
+    "lemma",
     "target_surface",
     "pos",
-    "ru_meaning",
+    "meaning_ru",
     "definition",
-    "context_en_source",
-    "context_en",
-    "cloze_en",
+    "context_source",
+    "context",
+    "cloze",
     "context_ru",
     "pattern",
     "synonyms",
@@ -24,14 +24,14 @@ CARD_OPTIONAL_FIELDS = ("tts_text",)
 
 @dataclass(frozen=True)
 class Card:
-    word_base: str
+    lemma: str
     target_surface: str
     pos: str
-    ru_meaning: str
+    meaning_ru: str
     definition: str
-    context_en_source: str
-    context_en: str
-    cloze_en: str
+    context_source: str
+    context: str
+    cloze: str
     context_ru: str
     pattern: str
     synonyms: str
@@ -42,14 +42,14 @@ class Card:
 
     def as_dict(self) -> dict[str, str]:
         data = {
-            "word_base": self.word_base,
+            "lemma": self.lemma,
             "target_surface": self.target_surface,
             "pos": self.pos,
-            "ru_meaning": self.ru_meaning,
+            "meaning_ru": self.meaning_ru,
             "definition": self.definition,
-            "context_en_source": self.context_en_source,
-            "context_en": self.context_en,
-            "cloze_en": self.cloze_en,
+            "context_source": self.context_source,
+            "context": self.context,
+            "cloze": self.cloze,
             "context_ru": self.context_ru,
             "pattern": self.pattern,
             "synonyms": self.synonyms,
@@ -77,14 +77,14 @@ def parse_card(payload: dict[str, Any]) -> Card:
         raise RuntimeError("OpenAI returned invalid card JSON: 'tts_text' must be a non-empty string")
 
     return Card(
-        word_base=payload["word_base"].strip(),
+        lemma=payload["lemma"].strip(),
         target_surface=payload["target_surface"].strip(),
         pos=payload["pos"].strip(),
-        ru_meaning=payload["ru_meaning"].strip(),
+        meaning_ru=payload["meaning_ru"].strip(),
         definition=payload["definition"].strip(),
-        context_en_source=payload["context_en_source"].strip(),
-        context_en=payload["context_en"].strip(),
-        cloze_en=payload["cloze_en"].strip(),
+        context_source=payload["context_source"].strip(),
+        context=payload["context"].strip(),
+        cloze=payload["cloze"].strip(),
         context_ru=payload["context_ru"].strip(),
         pattern=payload["pattern"].strip(),
         synonyms=payload["synonyms"].strip(),

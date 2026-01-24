@@ -124,7 +124,7 @@ def session_command(
 
             if existing_note_ids is None:
                 word_field = word_field_name(config.field_map)
-                query = f'note:"{config.note_model}" {word_field}:"{card.word_base}"'
+                query = f'note:"{config.note_model}" {word_field}:"{card.lemma}"'
                 existing_note_ids = find_notes(config.ankiconnect_url, query)
 
             has_existing = bool(existing_note_ids)
@@ -158,7 +158,7 @@ def session_command(
                 typer.echo("Unknown action.", err=True)
                 continue
 
-            tts_text = card.tts_text or card.word_base
+            tts_text = card.tts_text or card.lemma
             fields = card_to_fields(card, config.field_map)
 
             if action == "a":

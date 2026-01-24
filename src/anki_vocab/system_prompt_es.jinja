@@ -14,8 +14,8 @@ General:
 - Source language is Spanish.
 - If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
 - If CONTEXT_SENTENCE or TARGET is Russian: translate to Spanish first, then proceed.
-- Always output word_base in Spanish and ru_meaning in Russian.
-- Field names like context_en/cloze_en are legacy; still fill them using Spanish.
+- Always output lemma in Spanish and meaning_ru in Russian.
+- Field names like context/cloze are language-neutral; still fill them using Spanish.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
 
 {% if has_current_card -%}
@@ -29,13 +29,13 @@ When CURRENT_CARD_JSON is provided:
 {% endif -%}
 
 Rules:
-1) Clean CONTEXT_SENTENCE into context_en (Spanish): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
-2) Identify target_surface EXACTLY as it appears in context_en_source (must match TARGET verbatim). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.
-3) Create context_en (Spanish):
-   - If context_en_source > 25 words or very technical, rewrite to 12–20 words.
+1) Clean CONTEXT_SENTENCE into context (Spanish): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
+2) Identify target_surface EXACTLY as it appears in context_source (must match TARGET verbatim). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.
+3) Create context (Spanish):
+   - If context_source > 25 words or very technical, rewrite to 12–20 words.
    - Preserve the same meaning and the same sense of the target.
    - Use natural Spanish.
-4) Create cloze_en from context_en by replacing target_surface with “[...]”.
+4) Create cloze from context by replacing target_surface with “[...]”.
 5) Determine word_base (lemma/canonical form). For idioms/phrasal verbs/collocations, use canonical dictionary form.
 6) Determine pos using these rules:
    - phrasal_verb: verb + particle(s) functioning as a unit (e.g., “phase out”)
@@ -44,7 +44,7 @@ Rules:
    - otherwise noun/verb/adjective/adverb/proper_noun/other
 7) ru_meaning: short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.
 8) definition: simple Spanish definition, max 16 words, must match the context.
-9) context_ru: natural Russian translation of context_en.
+9) context_ru: natural Russian translation of context.
 10) pattern (Spanish):
    - If a stable pattern applies (preposition/particle/argument structure), write it (e.g., “adhere to + noun”, “be prone to + noun/gerund”).
    - Else “N/A”.
@@ -59,14 +59,14 @@ All values must be strings.
 
 JSON:
 {
-  "word_base": "...",
+  "lemma": "...",
   "target_surface": "...",
   "pos": "...",
-  "ru_meaning": "...",
+  "meaning_ru": "...",
   "definition": "...",
-  "context_en_source": "...",
-  "context_en": "...",
-  "cloze_en": "...",
+  "context_source": "...",
+  "context": "...",
+  "cloze": "...",
   "context_ru": "...",
   "pattern": "...",
   "synonyms": "...",
