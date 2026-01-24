@@ -101,6 +101,7 @@ def session_command(
         current_card: dict[str, str] | None = None
         user_prompt: str | None = None
         existing_note_ids: list[int] | None = None
+        last_lemma: str | None = None
 
         while True:
             try:
@@ -122,10 +123,11 @@ def session_command(
             if dry_run:
                 break
 
-            if existing_note_ids is None:
+            if existing_note_ids is None or last_lemma != card.lemma:
                 word_field = word_field_name(config.field_map)
                 query = f'note:"{config.note_model}" {word_field}:"{card.lemma}"'
                 existing_note_ids = find_notes(config.ankiconnect_url, query)
+                last_lemma = card.lemma
 
             has_existing = bool(existing_note_ids)
             default_action = "a" if not has_existing else "s"

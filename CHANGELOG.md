@@ -23,3 +23,5 @@
 - Updated prompt to produce card fields in the source language (non-Russian fields).
 - Added a dedicated Spanish system prompt template.
 - Renamed internal JSON fields to language-neutral keys (e.g., context/cloze/lemma).
+- Update command now only accepts `--note-id`, respects field-map keys for word/context, and keeps note lookup fresh after regenerations.
+- `config show` now redacts the OpenAI API key and the CLI avoids prompting for it in non-interactive sessions.

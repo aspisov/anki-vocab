@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Annotated, Any
+from typing import Annotated
 
 import typer
 from rich.console import Console
@@ -9,63 +9,18 @@ from rich.console import Console
 from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
 from ..core.audio import build_audio_field
 from ..core.cleaning import clean_context
-from ..core.config import Config, resolve_config
+from ..core.config import resolve_config
 from ..core.prompting import render_card
 from ..integrations.ankiconnect import (
-    find_notes,
     notes_info,
     update_note_fields,
 )
 from ..integrations.openai_client import generate_card
-from .utils import confirm_menu, note_field_value, select_note_id
-
-
-def _resolve_note_id(config: Config, *, word: str | None, note_id: int | None) -> tuple[int, dict[str, Any]]:
-    if note_id is not None:
-        notes = notes_info(config.ankiconnect_url, [note_id])
-        if not notes:
-            raise typer.BadParameter(f"Note id {note_id} not found.")
-        return note_id, notes[0]
-
-    if not word:
-        raise typer.BadParameter("Provide --word or --note-id.")
-
-    word_field = word_field_name(config.field_map)
-    query = f'note:"{config.note_model}" {word_field}:"{word}"'
-    note_ids = find_notes(config.ankiconnect_url, query)
-    if not note_ids:
-        raise typer.BadParameter("No matching notes found.")
-
-    notes = notes_info(config.ankiconnect_url, note_ids)
-    if not notes:
-        raise typer.BadParameter("No matching notes found.")
-
-    if len(notes) == 1:
-        return int(notes[0]["noteId"]), notes[0]
-
-    selected = select_note_id(notes, config.field_map)
-    picked = next((note for note in notes if int(note["noteId"]) == selected), None)
-    if picked is None:
-        notes = notes_info(config.ankiconnect_url, [selected])
-        if not notes:
-            raise typer.BadParameter("Selected note id not found.")
-        return selected, notes[0]
-    return selected, picked
-
-
-def _prompt_note_id() -> int:
-    while True:
-        raw = input("Note id: ").strip()
-        if raw.lower() in {"q", "quit"}:
-            raise typer.Abort()
-        if raw.isdigit():
-            return int(raw)
-        typer.echo("Invalid note id.", err=True)
+from .utils import confirm_menu, note_field_value
 
 
 def update_command(
-    word: Annotated[str | None, typer.Option("--word", help="Word/phrase to update.")] = None,
-    note_id: Annotated[int | None, typer.Option("--note-id", help="Specific Anki note id.")] = None,
+    note_id: Annotated[int, typer.Option("--note-id", help="Specific Anki note id.")],
     sentence: Annotated[
         str | None,
         typer.Option("--sentence", help="Context sentence (defaults to note field)."),
@@ -88,17 +43,17 @@ def update_command(
         tts_enabled=(not no_tts) and config.tts_enabled,
     )
 
-    if note_id is None and word is None:
-        note_id = _prompt_note_id()
+    notes = notes_info(config.ankiconnect_url, [note_id])
+    if not notes:
+        raise typer.BadParameter(f"Note id {note_id} not found.")
+    note = notes[0]
 
-    note_id_value, note = _resolve_note_id(config, word=word, note_id=note_id)
-
-    word_field = config.field_map.get("word_base", "Word")
+    word_field = word_field_name(config.field_map)
     existing_word = note_field_value(note, word_field)
     if not existing_word:
         raise typer.BadParameter("Selected note is missing the word field.")
 
-    sentence_field = config.field_map.get("context_en", "Context Sentence")
+    sentence_field = config.field_map.get("context", "Context Sentence")
     existing_sentence = note_field_value(note, sentence_field)
     if not sentence:
         sentence = existing_sentence or ""
@@ -142,5 +97,5 @@ def update_command(
             )
             fields[config.tts_field] = audio_field_value
 
-    update_note_fields(config.ankiconnect_url, note_id_value, fields)
-    typer.echo(f"Updated note id: {note_id_value}", err=True)
+    update_note_fields(config.ankiconnect_url, note_id, fields)
+    typer.echo(f"Updated note id: {note_id}", err=True)

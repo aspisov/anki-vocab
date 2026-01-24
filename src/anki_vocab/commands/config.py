@@ -29,7 +29,10 @@ def config_init(
 @config_app.command("show")
 def config_show() -> None:
     config = resolve_config()
-    typer.echo(json.dumps(config_as_dict(config), indent=2, sort_keys=True))
+    payload = config_as_dict(config)
+    if payload.get("openai_api_key"):
+        payload["openai_api_key"] = "********"
+    typer.echo(json.dumps(payload, indent=2, sort_keys=True))
 
 
 @config_app.command("set")

@@ -1,3 +1,5 @@
+import sys
+
 import typer
 
 from .commands.config import (
@@ -28,6 +30,12 @@ def main(ctx: typer.Context) -> None:
 
     config = resolve_config()
     if not config.openai_api_key:
+        if not sys.stdin.isatty():
+            typer.echo(
+                "OpenAI API key is not set. Use `anki-vocab config set openai_api_key ...` or set ANKI_VOCAB_OPENAI_API_KEY.",
+                err=True,
+            )
+            raise typer.Exit(code=1)
         typer.echo("OpenAI API key is not set.")
         api_key = input("Enter OpenAI API key: ").strip()
         if not api_key:
