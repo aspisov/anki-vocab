@@ -52,8 +52,6 @@ Rules:
    - If not confident: “N/A”.
 12) notes (max 2 short lines):
    - include at most one of: register, common collocation, or “don’t confuse with X”.
-13) rarity and cefr:
-   - If not confident, set to “Unknown” WITHOUT extra explanation.
 
 Output format: return ONLY a single JSON object, no markdown, no extra text.
 All values must be strings.
@@ -72,7 +70,7 @@ JSON:
   "pattern": "...",
   "synonyms": "...",
   "notes": "...",
-  "rarity": "...",
-  "cefr": "...",
-  "tts_text": "..."
+  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
+  "cefr": "A2 | B1 | B2 | C1 | C2 | Unknown",
+  "tts_text": "Short pattern phrase"
 }
