@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from ..core.ankimapping import card_to_fields, word_field_name
-from ..core.audio import build_audio_field
+from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
 from rich.console import Console
@@ -101,6 +101,7 @@ def session_command(
         current_card: dict[str, str] | None = None
         user_prompt: str | None = None
         existing_note_ids: list[int] | None = None
+        last_lemma: str | None = None
 
         while True:
             try:
@@ -122,10 +123,11 @@ def session_command(
             if dry_run:
                 break
 
-            if existing_note_ids is None:
+            if existing_note_ids is None or last_lemma != card.lemma:
                 word_field = word_field_name(config.field_map)
                 query = f'note:"{config.note_model}" {word_field}:"{card.lemma}"'
                 existing_note_ids = find_notes(config.ankiconnect_url, query)
+                last_lemma = card.lemma
 
             has_existing = bool(existing_note_ids)
             default_action = "a" if not has_existing else "s"
@@ -158,25 +160,29 @@ def session_command(
                 typer.echo("Unknown action.", err=True)
                 continue
 
-            tts_text = card.tts_text or card.lemma
             fields = card_to_fields(card, config.field_map)
 
             if action == "a":
-                audio_field_value: str | None = None
-                if config.tts_enabled and tts_text:
-                    audio_field_value = build_audio_field(
+                lemma_audio: str | None = None
+                context_audio: str | None = None
+                if config.tts_enabled:
+                    lemma_audio, context_audio = build_audio_fields(
                         config.ankiconnect_url,
-                        tts_text,
+                        lemma=card.lemma,
+                        context=card.context,
                         voice=config.tts_voice,
                         rate=config.tts_rate,
                     )
-                    fields[config.tts_field] = audio_field_value
+                    if lemma_audio:
+                        fields[config.tts_lemma_field] = lemma_audio
+                    if context_audio:
+                        fields[config.tts_context_field] = context_audio
                 note = {
                     "deckName": config.deck,
                     "modelName": config.note_model,
                     "fields": fields,
                     "options": {"allowDuplicate": False},
-                    "tags": ["auto"] + (["tts"] if audio_field_value else []),
+                    "tags": ["auto"] + (["tts"] if (lemma_audio or context_audio) else []),
                 }
                 try:
                     new_id = add_note(config.ankiconnect_url, note)
@@ -196,18 +202,24 @@ def session_command(
                 break
 
             notes = notes_info(config.ankiconnect_url, [note_id])
-            existing_audio = None
+            existing_lemma_audio = None
+            existing_context_audio = None
             if notes:
-                existing_audio = notes[0]["fields"].get(config.tts_field, {}).get("value")
+                existing_lemma_audio = notes[0]["fields"].get(config.tts_lemma_field, {}).get("value")
+                existing_context_audio = notes[0]["fields"].get(config.tts_context_field, {}).get("value")
 
-            if config.tts_enabled and tts_text:
-                if not existing_audio:
-                    fields[config.tts_field] = build_audio_field(
-                        config.ankiconnect_url,
-                        tts_text,
-                        voice=config.tts_voice,
-                        rate=config.tts_rate,
-                    )
+            if config.tts_enabled:
+                lemma_audio, context_audio = build_audio_fields(
+                    config.ankiconnect_url,
+                    lemma=card.lemma if not existing_lemma_audio else "",
+                    context=card.context if not existing_context_audio else "",
+                    voice=config.tts_voice,
+                    rate=config.tts_rate,
+                )
+                if lemma_audio:
+                    fields[config.tts_lemma_field] = lemma_audio
+                if context_audio:
+                    fields[config.tts_context_field] = context_audio
 
             update_note_fields(config.ankiconnect_url, note_id, fields)
             typer.echo(f"Updated note id: {note_id}", err=True)

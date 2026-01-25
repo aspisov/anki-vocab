@@ -22,3 +22,21 @@ def test_build_audio_field_cleans_temp_file(monkeypatch) -> None:
     assert result.startswith("[sound:tts_")
     assert "path" in recorded
     assert not Path(recorded["path"]).exists()
+
+
+def test_build_audio_fields_returns_separate_audio(monkeypatch) -> None:
+    def fake_build_audio_field(url: str, text: str, *, voice: str, rate: str) -> str:
+        return f"[sound:{text}]"
+
+    monkeypatch.setattr(audio, "build_audio_field", fake_build_audio_field)
+
+    lemma_audio, context_audio = audio.build_audio_fields(
+        "http://localhost:8765",
+        lemma="run",
+        context="I run.",
+        voice="voice",
+        rate="+0%",
+    )
+
+    assert lemma_audio == "[sound:run]"
+    assert context_audio == "[sound:I run.]"

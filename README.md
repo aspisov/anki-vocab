@@ -31,10 +31,10 @@ uv run anki-vocab session
 ```
 Use `context sentence | word`, `word`, or `:quit`.
 
-- Update an existing card (pick duplicates if needed):
+- Update existing cards (loops for more note ids):
 
 ```bash
-uv run anki-vocab update --word "gave up" --sentence "I finally gave up smoking last year."
+uv run anki-vocab update --note-id 123456 --prompt "Refine the definition for academic usage."
 ```
 
 - Dry run:

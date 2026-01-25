@@ -30,3 +30,20 @@ def build_audio_field(
         except FileNotFoundError:
             pass
     return f"[sound:{audio_filename}]"
+
+
+def build_audio_fields(
+    ankiconnect_url: str,
+    *,
+    lemma: str,
+    context: str,
+    voice: str,
+    rate: str,
+) -> tuple[str | None, str | None]:
+    lemma_audio = None
+    context_audio = None
+    if lemma.strip():
+        lemma_audio = build_audio_field(ankiconnect_url, lemma, voice=voice, rate=rate)
+    if context.strip():
+        context_audio = build_audio_field(ankiconnect_url, context, voice=voice, rate=rate)
+    return lemma_audio, context_audio

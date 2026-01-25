@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Update inline note-id parsing to accept an optional prompt, and generate lemma/context TTS audio without relying on LLM-provided TTS text.
+- Split TTS audio into separate lemma and context fields with configurable names.
 - Added Typer-based CLI with `session`, `update`, and `config` commands.
 - Added config file support, env overrides, and audio overwrite policies.
 - Refactored core logic into modules and introduced schema validation.
@@ -23,3 +25,7 @@
 - Updated prompt to produce card fields in the source language (non-Russian fields).
 - Added a dedicated Spanish system prompt template.
 - Renamed internal JSON fields to language-neutral keys (e.g., context/cloze/lemma).
+- Update command now only accepts `--note-id`, respects field-map keys for word/context, and keeps note lookup fresh after regenerations.
+- `config show` now redacts the OpenAI API key and the CLI avoids prompting for it in non-interactive sessions.
+- Update command now uses note context only and accepts only `--note-id` plus optional `--prompt`.
+- Update command now loops for multiple note ids in one run, prompting after each update.

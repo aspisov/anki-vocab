@@ -1,75 +1,54 @@
 from __future__ import annotations
 
 from dataclasses import replace
-from typing import Annotated, Any
+from typing import Annotated
 
 import typer
 from rich.console import Console
 
 from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
-from ..core.audio import build_audio_field
+from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
-from ..core.config import Config, resolve_config
+from ..core.config import resolve_config
 from ..core.prompting import render_card
 from ..integrations.ankiconnect import (
-    find_notes,
     notes_info,
     update_note_fields,
 )
 from ..integrations.openai_client import generate_card
-from .utils import confirm_menu, note_field_value, select_note_id
+from .utils import confirm_menu, note_field_value
 
 
-def _resolve_note_id(config: Config, *, word: str | None, note_id: int | None) -> tuple[int, dict[str, Any]]:
-    if note_id is not None:
-        notes = notes_info(config.ankiconnect_url, [note_id])
-        if not notes:
-            raise typer.BadParameter(f"Note id {note_id} not found.")
-        return note_id, notes[0]
+def _parse_note_id_input(raw: str) -> tuple[int, str | None]:
+    if "|" in raw:
+        left, right = raw.split("|", 1)
+        note_id = left.strip()
+        prompt = right.strip()
+        if not prompt:
+            raise ValueError("Prompt is missing after '|'.")
+    else:
+        note_id = raw.strip()
+        prompt = None
 
-    if not word:
-        raise typer.BadParameter("Provide --word or --note-id.")
+    if not note_id.isdigit():
+        raise ValueError("Invalid note id.")
 
-    word_field = word_field_name(config.field_map)
-    query = f'note:"{config.note_model}" {word_field}:"{word}"'
-    note_ids = find_notes(config.ankiconnect_url, query)
-    if not note_ids:
-        raise typer.BadParameter("No matching notes found.")
-
-    notes = notes_info(config.ankiconnect_url, note_ids)
-    if not notes:
-        raise typer.BadParameter("No matching notes found.")
-
-    if len(notes) == 1:
-        return int(notes[0]["noteId"]), notes[0]
-
-    selected = select_note_id(notes, config.field_map)
-    picked = next((note for note in notes if int(note["noteId"]) == selected), None)
-    if picked is None:
-        notes = notes_info(config.ankiconnect_url, [selected])
-        if not notes:
-            raise typer.BadParameter("Selected note id not found.")
-        return selected, notes[0]
-    return selected, picked
+    return int(note_id), prompt
 
 
-def _prompt_note_id() -> int:
+def _prompt_note_id() -> tuple[int | None, str | None]:
     while True:
-        raw = input("Note id: ").strip()
+        raw = input("Note id (or 'q' to quit): ").strip()
         if raw.lower() in {"q", "quit"}:
-            raise typer.Abort()
-        if raw.isdigit():
-            return int(raw)
-        typer.echo("Invalid note id.", err=True)
+            return None, None
+        try:
+            return _parse_note_id_input(raw)
+        except ValueError as exc:
+            typer.echo(str(exc), err=True)
 
 
 def update_command(
-    word: Annotated[str | None, typer.Option("--word", help="Word/phrase to update.")] = None,
     note_id: Annotated[int | None, typer.Option("--note-id", help="Specific Anki note id.")] = None,
-    sentence: Annotated[
-        str | None,
-        typer.Option("--sentence", help="Context sentence (defaults to note field)."),
-    ] = None,
     prompt: Annotated[str | None, typer.Option("--prompt", help="Instruction for updating the note.")] = None,
     note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
     openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
@@ -88,59 +67,76 @@ def update_command(
         tts_enabled=(not no_tts) and config.tts_enabled,
     )
 
-    if note_id is None and word is None:
-        note_id = _prompt_note_id()
+    base_prompt = prompt
 
-    note_id_value, note = _resolve_note_id(config, word=word, note_id=note_id)
+    while True:
+        if note_id is not None:
+            current_note_id = note_id
+            inline_prompt = None
+        else:
+            current_note_id, inline_prompt = _prompt_note_id()
+        note_id = None
+        if current_note_id is None:
+            return
+        effective_prompt = base_prompt if base_prompt is not None else inline_prompt
 
-    word_field = config.field_map.get("word_base", "Word")
-    existing_word = note_field_value(note, word_field)
-    if not existing_word:
-        raise typer.BadParameter("Selected note is missing the word field.")
+        notes = notes_info(config.ankiconnect_url, [current_note_id])
+        if not notes:
+            typer.echo(f"Note id {current_note_id} not found.", err=True)
+            continue
+        note = notes[0]
 
-    sentence_field = config.field_map.get("context_en", "Context Sentence")
-    existing_sentence = note_field_value(note, sentence_field)
-    if not sentence:
+        word_field = word_field_name(config.field_map)
+        existing_word = note_field_value(note, word_field)
+        if not existing_word:
+            typer.echo("Selected note is missing the word field.", err=True)
+            continue
+
+        sentence_field = config.field_map.get("context", "Context Sentence")
+        existing_sentence = note_field_value(note, sentence_field)
         sentence = existing_sentence or ""
 
-    sentence_clean = clean_context(sentence)
-    current_card = note_to_card_payload(note, config.field_map)
-    try:
-        card = generate_card(
-            sentence_clean,
-            existing_word,
-            model=config.openai_model,
-            api_key=config.openai_api_key,
-            source_language=config.source_language,
-            current_card=current_card,
-            user_prompt=prompt,
-        )
-    except Exception as exc:
-        typer.echo(f"OpenAI error: {exc}", err=True)
-        raise typer.Exit(code=4) from exc
-    console = Console(stderr=True)
-    render_card(console, card)
+        sentence_clean = clean_context(sentence)
+        current_card = note_to_card_payload(note, config.field_map)
+        try:
+            card = generate_card(
+                sentence_clean,
+                existing_word,
+                model=config.openai_model,
+                api_key=config.openai_api_key,
+                source_language=config.source_language,
+                current_card=current_card,
+                user_prompt=effective_prompt,
+            )
+        except Exception as exc:
+            typer.echo(f"OpenAI error: {exc}", err=True)
+            raise typer.Exit(code=4) from exc
+        console = Console(stderr=True)
+        render_card(console, card)
 
-    if dry_run:
-        return
+        if dry_run:
+            continue
 
-    if not confirm_menu("Update this note?", default_yes=False):
-        typer.echo("Skipped.", err=True)
-        return
+        if not confirm_menu("Update this note?", default_yes=True):
+            typer.echo("Skipped.", err=True)
+            continue
 
-    fields = card_to_fields(card, config.field_map)
+        fields = card_to_fields(card, config.field_map)
 
-    if config.tts_enabled:
-        existing_audio = note_field_value(note, config.tts_field)
-        if not existing_audio:
-            tts_text = card.tts_text or card.lemma
-            audio_field_value = build_audio_field(
+        if config.tts_enabled:
+            existing_lemma_audio = note_field_value(note, config.tts_lemma_field)
+            existing_context_audio = note_field_value(note, config.tts_context_field)
+            lemma_audio, context_audio = build_audio_fields(
                 config.ankiconnect_url,
-                tts_text,
+                lemma=card.lemma if not existing_lemma_audio else "",
+                context=card.context if not existing_context_audio else "",
                 voice=config.tts_voice,
                 rate=config.tts_rate,
             )
-            fields[config.tts_field] = audio_field_value
+            if lemma_audio:
+                fields[config.tts_lemma_field] = lemma_audio
+            if context_audio:
+                fields[config.tts_context_field] = context_audio
 
-    update_note_fields(config.ankiconnect_url, note_id_value, fields)
-    typer.echo(f"Updated note id: {note_id_value}", err=True)
+        update_note_fields(config.ankiconnect_url, current_note_id, fields)
+        typer.echo(f"Updated note id: {current_note_id}", err=True)
