@@ -43,7 +43,8 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
         openai_model="gpt-test",
         tts_voice="voice",
         tts_rate="+0%",
-        tts_field="Audio",
+        tts_lemma_field="Audio Lemma",
+        tts_context_field="Audio Context",
         tts_enabled=False,
     )
 
@@ -98,7 +99,8 @@ def test_update_command_uses_inline_prompt(monkeypatch: pytest.MonkeyPatch) -> N
         openai_model="gpt-test",
         tts_voice="voice",
         tts_rate="+0%",
-        tts_field="Audio",
+        tts_lemma_field="Audio Lemma",
+        tts_context_field="Audio Context",
         tts_enabled=False,
     )
 

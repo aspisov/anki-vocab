@@ -37,7 +37,8 @@ class Config:
     openai_model: str
     tts_voice: str
     tts_rate: str
-    tts_field: str
+    tts_lemma_field: str
+    tts_context_field: str
     tts_enabled: bool
 
 
@@ -51,7 +52,8 @@ DEFAULT_CONFIG = Config(
     openai_model="gpt-5.2",
     tts_voice="en-US-AvaNeural",
     tts_rate="+0%",
-    tts_field="Audio",
+    tts_lemma_field="Audio Lemma",
+    tts_context_field="Audio Context",
     tts_enabled=True,
 )
 
@@ -66,7 +68,8 @@ DEFAULT_CONFIG_DICT = {
     "tts": {
         "voice": DEFAULT_CONFIG.tts_voice,
         "rate": DEFAULT_CONFIG.tts_rate,
-        "field": DEFAULT_CONFIG.tts_field,
+        "lemma_field": DEFAULT_CONFIG.tts_lemma_field,
+        "context_field": DEFAULT_CONFIG.tts_context_field,
         "enabled": DEFAULT_CONFIG.tts_enabled,
     },
     "session": {},
@@ -116,6 +119,8 @@ def resolve_config() -> Config:
         "ANKI_VOCAB_TTS_VOICE": ("tts.voice", str),
         "ANKI_VOCAB_TTS_RATE": ("tts.rate", str),
         "ANKI_VOCAB_TTS_FIELD": ("tts.field", str),
+        "ANKI_VOCAB_TTS_LEMMA_FIELD": ("tts.lemma_field", str),
+        "ANKI_VOCAB_TTS_CONTEXT_FIELD": ("tts.context_field", str),
         "ANKI_VOCAB_TTS_ENABLED": ("tts.enabled", _coerce_bool),
     }
 
@@ -138,6 +143,14 @@ def resolve_config() -> Config:
     if isinstance(tts_enabled, str):
         tts_enabled = _coerce_bool(tts_enabled)
 
+    fallback_field = tts_config.get("field", "")
+    tts_lemma_field = str(
+        tts_config.get("lemma_field", fallback_field or DEFAULT_CONFIG.tts_lemma_field)
+    )
+    tts_context_field = str(
+        tts_config.get("context_field", fallback_field or DEFAULT_CONFIG.tts_context_field)
+    )
+
     return Config(
         deck=str(merged.get("deck", DEFAULT_CONFIG.deck)),
         note_model=str(merged.get("note_model", DEFAULT_CONFIG.note_model)),
@@ -148,7 +161,8 @@ def resolve_config() -> Config:
         openai_model=str(merged.get("openai_model", DEFAULT_CONFIG.openai_model)),
         tts_voice=str(tts_config.get("voice", DEFAULT_CONFIG.tts_voice)),
         tts_rate=str(tts_config.get("rate", DEFAULT_CONFIG.tts_rate)),
-        tts_field=str(tts_config.get("field", DEFAULT_CONFIG.tts_field)),
+        tts_lemma_field=tts_lemma_field,
+        tts_context_field=tts_context_field,
         tts_enabled=bool(tts_enabled),
     )
 
@@ -187,7 +201,8 @@ def config_as_dict(config: Config) -> dict[str, Any]:
         "tts": {
             "voice": config.tts_voice,
             "rate": config.tts_rate,
-            "field": config.tts_field,
+            "lemma_field": config.tts_lemma_field,
+            "context_field": config.tts_context_field,
             "enabled": config.tts_enabled,
         },
         "session": {},

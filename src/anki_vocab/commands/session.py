@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from ..core.ankimapping import card_to_fields, word_field_name
-from ..core.audio import audio_tag_count, build_audio_bundle
+from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
 from rich.console import Console
@@ -163,23 +163,26 @@ def session_command(
             fields = card_to_fields(card, config.field_map)
 
             if action == "a":
-                audio_field_value: str | None = None
+                lemma_audio: str | None = None
+                context_audio: str | None = None
                 if config.tts_enabled:
-                    audio_field_value = build_audio_bundle(
+                    lemma_audio, context_audio = build_audio_fields(
                         config.ankiconnect_url,
                         lemma=card.lemma,
                         context=card.context,
                         voice=config.tts_voice,
                         rate=config.tts_rate,
                     )
-                    if audio_field_value:
-                        fields[config.tts_field] = audio_field_value
+                    if lemma_audio:
+                        fields[config.tts_lemma_field] = lemma_audio
+                    if context_audio:
+                        fields[config.tts_context_field] = context_audio
                 note = {
                     "deckName": config.deck,
                     "modelName": config.note_model,
                     "fields": fields,
                     "options": {"allowDuplicate": False},
-                    "tags": ["auto"] + (["tts"] if audio_field_value else []),
+                    "tags": ["auto"] + (["tts"] if (lemma_audio or context_audio) else []),
                 }
                 try:
                     new_id = add_note(config.ankiconnect_url, note)
@@ -199,20 +202,24 @@ def session_command(
                 break
 
             notes = notes_info(config.ankiconnect_url, [note_id])
-            existing_audio = None
+            existing_lemma_audio = None
+            existing_context_audio = None
             if notes:
-                existing_audio = notes[0]["fields"].get(config.tts_field, {}).get("value")
+                existing_lemma_audio = notes[0]["fields"].get(config.tts_lemma_field, {}).get("value")
+                existing_context_audio = notes[0]["fields"].get(config.tts_context_field, {}).get("value")
 
-            if config.tts_enabled and audio_tag_count(existing_audio) < 2:
-                audio_field_value = build_audio_bundle(
+            if config.tts_enabled:
+                lemma_audio, context_audio = build_audio_fields(
                     config.ankiconnect_url,
-                    lemma=card.lemma,
-                    context=card.context,
+                    lemma=card.lemma if not existing_lemma_audio else "",
+                    context=card.context if not existing_context_audio else "",
                     voice=config.tts_voice,
                     rate=config.tts_rate,
                 )
-                if audio_field_value:
-                    fields[config.tts_field] = audio_field_value
+                if lemma_audio:
+                    fields[config.tts_lemma_field] = lemma_audio
+                if context_audio:
+                    fields[config.tts_context_field] = context_audio
 
             update_note_fields(config.ankiconnect_url, note_id, fields)
             typer.echo(f"Updated note id: {note_id}", err=True)

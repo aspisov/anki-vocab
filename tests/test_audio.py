@@ -24,19 +24,13 @@ def test_build_audio_field_cleans_temp_file(monkeypatch) -> None:
     assert not Path(recorded["path"]).exists()
 
 
-def test_audio_tag_count_counts_sound_tags() -> None:
-    assert audio.audio_tag_count(None) == 0
-    assert audio.audio_tag_count("") == 0
-    assert audio.audio_tag_count("[sound:a.mp3] [sound:b.mp3]") == 2
-
-
-def test_build_audio_bundle_joins_audio_tags(monkeypatch) -> None:
+def test_build_audio_fields_returns_separate_audio(monkeypatch) -> None:
     def fake_build_audio_field(url: str, text: str, *, voice: str, rate: str) -> str:
         return f"[sound:{text}]"
 
     monkeypatch.setattr(audio, "build_audio_field", fake_build_audio_field)
 
-    result = audio.build_audio_bundle(
+    lemma_audio, context_audio = audio.build_audio_fields(
         "http://localhost:8765",
         lemma="run",
         context="I run.",
@@ -44,4 +38,5 @@ def test_build_audio_bundle_joins_audio_tags(monkeypatch) -> None:
         rate="+0%",
     )
 
-    assert result == "[sound:run] [sound:I run.]"
+    assert lemma_audio == "[sound:run]"
+    assert context_audio == "[sound:I run.]"

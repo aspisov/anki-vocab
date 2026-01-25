@@ -2,6 +2,7 @@
 
 ## Unreleased
 - Update inline note-id parsing to accept an optional prompt, and generate lemma/context TTS audio without relying on LLM-provided TTS text.
+- Split TTS audio into separate lemma and context fields with configurable names.
 - Added Typer-based CLI with `session`, `update`, and `config` commands.
 - Added config file support, env overrides, and audio overwrite policies.
 - Refactored core logic into modules and introduced schema validation.

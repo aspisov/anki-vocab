@@ -7,7 +7,7 @@ import typer
 from rich.console import Console
 
 from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
-from ..core.audio import audio_tag_count, build_audio_bundle
+from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
 from ..core.config import resolve_config
 from ..core.prompting import render_card
@@ -124,17 +124,19 @@ def update_command(
         fields = card_to_fields(card, config.field_map)
 
         if config.tts_enabled:
-            existing_audio = note_field_value(note, config.tts_field)
-            if audio_tag_count(existing_audio) < 2:
-                audio_field_value = build_audio_bundle(
-                    config.ankiconnect_url,
-                    lemma=card.lemma,
-                    context=card.context,
-                    voice=config.tts_voice,
-                    rate=config.tts_rate,
-                )
-                if audio_field_value:
-                    fields[config.tts_field] = audio_field_value
+            existing_lemma_audio = note_field_value(note, config.tts_lemma_field)
+            existing_context_audio = note_field_value(note, config.tts_context_field)
+            lemma_audio, context_audio = build_audio_fields(
+                config.ankiconnect_url,
+                lemma=card.lemma if not existing_lemma_audio else "",
+                context=card.context if not existing_context_audio else "",
+                voice=config.tts_voice,
+                rate=config.tts_rate,
+            )
+            if lemma_audio:
+                fields[config.tts_lemma_field] = lemma_audio
+            if context_audio:
+                fields[config.tts_context_field] = context_audio
 
         update_note_fields(config.ankiconnect_url, current_note_id, fields)
         typer.echo(f"Updated note id: {current_note_id}", err=True)

@@ -32,23 +32,18 @@ def build_audio_field(
     return f"[sound:{audio_filename}]"
 
 
-def audio_tag_count(value: str | None) -> int:
-    if not value:
-        return 0
-    return value.count("[sound:")
-
-
-def build_audio_bundle(
+def build_audio_fields(
     ankiconnect_url: str,
     *,
     lemma: str,
     context: str,
     voice: str,
     rate: str,
-) -> str:
-    audio_tags: list[str] = []
+) -> tuple[str | None, str | None]:
+    lemma_audio = None
+    context_audio = None
     if lemma.strip():
-        audio_tags.append(build_audio_field(ankiconnect_url, lemma, voice=voice, rate=rate))
+        lemma_audio = build_audio_field(ankiconnect_url, lemma, voice=voice, rate=rate)
     if context.strip():
-        audio_tags.append(build_audio_field(ankiconnect_url, context, voice=voice, rate=rate))
-    return " ".join(audio_tags)
+        context_audio = build_audio_field(ankiconnect_url, context, voice=voice, rate=rate)
+    return lemma_audio, context_audio

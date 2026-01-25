@@ -15,7 +15,8 @@ def test_config_show_redacts_openai_key(monkeypatch, capsys) -> None:
         openai_model="gpt-test",
         tts_voice="voice",
         tts_rate="+0%",
-        tts_field="Audio",
+        tts_lemma_field="Audio Lemma",
+        tts_context_field="Audio Context",
         tts_enabled=True,
     )
 
