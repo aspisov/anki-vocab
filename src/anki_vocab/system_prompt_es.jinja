@@ -14,7 +14,7 @@ General:
 - Source language is Spanish.
 - If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
 - If CONTEXT_SENTENCE or TARGET is Russian: translate to Spanish first, then proceed.
-- Always output lemma in Spanish and meaning_ru in Russian.
+- Always output meaning_ru in Russian.
 - Field names like context/cloze are language-neutral; still fill them using Spanish.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
 
@@ -29,49 +29,24 @@ When CURRENT_CARD_JSON is provided:
 {% endif -%}
 
 Rules:
-1) Clean CONTEXT_SENTENCE into context (Spanish): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing. Keep meaning and wording as close as possible.
-2) Identify target_surface EXACTLY as it appears in context_source (must match TARGET verbatim). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.
-3) Create context (Spanish):
-   - If context_source > 25 words or very technical, rewrite to 12–20 words.
-   - Preserve the same meaning and the same sense of the target.
-   - Use natural Spanish.
-4) Create cloze from context by replacing target_surface with “[...]”.
-5) Determine word_base (lemma/canonical form). For idioms/phrasal verbs/collocations, use canonical dictionary form.
-6) Determine pos using these rules:
-   - phrasal_verb: verb + particle(s) functioning as a unit (e.g., “phase out”)
-   - idiom: meaning not predictable from parts (e.g., “kick the bucket”)
-   - collocation: fixed/common pairing where meaning is mostly compositional (e.g., “pose a risk”)
-   - otherwise noun/verb/adjective/adverb/proper_noun/other
-7) ru_meaning: short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.
-8) definition: simple Spanish definition, max 16 words, must match the context.
-9) context_ru: natural Russian translation of context.
-10) pattern (Spanish):
-   - If a stable pattern applies (preposition/particle/argument structure), write it (e.g., “adhere to + noun”, “be prone to + noun/gerund”).
-   - Else “N/A”.
-11) synonyms (Spanish):
-   - 2–4 synonyms that match POS and register AND could replace the target in context_en with minimal change.
-   - If not confident: “N/A”.
-12) notes (max 2 short lines, Spanish):
-   - include at most one of: register, common collocation, or “don’t confuse with X”.
-
-Output format: return ONLY a single JSON object, no markdown, no extra text.
-All values must be strings.
+- Return ONLY a single JSON object, no markdown, no extra text.
+- All values must be strings.
+- Follow the field instructions embedded in the JSON template below.
 
 JSON:
 {
-  "lemma": "...",
-  "target_surface": "...",
-  "pos": "...",
-  "meaning_ru": "...",
-  "definition": "...",
-  "context_source": "...",
-  "context": "...",
-  "cloze": "...",
-  "context_ru": "...",
-  "pattern": "...",
-  "synonyms": "...",
-  "notes": "...",
-  "rarity": "Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
-  "cefr": "A2 | B1 | B2 | C1 | C2 | Unknown",
-  "tts_text": "Short pattern phrase"
+  "target_surface": "Exact substring from context_source to cloze out. Start from TARGET. If TARGET is only a part of a longer idiom/collocation in the text and the full expression is clearly present, extend target_surface to the full expression as it appears in context_source (must contain TARGET). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.",
+  "context_source": "Cleaned CONTEXT_SENTENCE (Spanish): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing while keeping meaning/wording as close as possible.",
+  "context": "Anki-friendly Spanish sentence based on context_source that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. If context_source is > 25 words or very technical, rewrite to 12–20 words. Preserve meaning and the same sense of the target. Use natural Spanish. If CONTEXT_SENTENCE is missing/empty, invent a natural, non-generic sentence that disambiguates the meaning.",
+  "context_ru": "Natural Russian translation of context (preserve the same disambiguating cues).",
+  "cloze": "Derived from context by replacing target_surface with [...].",
+  "pos": "One of: phrasal_verb | idiom | collocation | noun | verb | adjective | adverb | proper_noun | other. phrasal_verb = verb + particle(s) as a unit; idiom = meaning not predictable from parts; collocation = common fixed pairing; otherwise use the standard POS.",
+  "meaning_ru": "Short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.",
+  "definition": "Simple Spanish definition (max 16 words), must match the context sense.",
+  "pattern": "If a stable pattern applies (preposition/particle/argument structure), write it. Else N/A.",
+  "synonyms": "2–4 Spanish synonyms that match POS and register and could replace the target in context with minimal change. If not confident: N/A.",
+  "notes": "Max 2 short lines (Spanish). Include at most one of: register, common collocation, or don't confuse with X.",
+  "rarity": "Choose one: Very common | Common | Uncommon | Rare | Literary/Academic | Unknown",
+  "cefr": "Choose one: A2 | B1 | B2 | C1 | C2 | Unknown",
+  "lemma": "English lemma/canonical dictionary form. For idioms/phrasal verbs/collocations, use the canonical dictionary form."
 }

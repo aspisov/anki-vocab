@@ -24,8 +24,6 @@ def test_parse_card_accepts_valid_payload() -> None:
         "notes": "Often used in education or QA contexts.",
         "rarity": "Common",
         "cefr": "B1",
-        "tts_text": "test",
     }
     card = parse_card(payload)
     assert card.lemma == "test"
-    assert card.tts_text == "test"

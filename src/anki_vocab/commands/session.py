@@ -6,7 +6,7 @@ from typing import Annotated
 import typer
 
 from ..core.ankimapping import card_to_fields, word_field_name
-from ..core.audio import build_audio_field
+from ..core.audio import audio_tag_count, build_audio_bundle
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
 from rich.console import Console
@@ -160,19 +160,20 @@ def session_command(
                 typer.echo("Unknown action.", err=True)
                 continue
 
-            tts_text = card.tts_text or card.lemma
             fields = card_to_fields(card, config.field_map)
 
             if action == "a":
                 audio_field_value: str | None = None
-                if config.tts_enabled and tts_text:
-                    audio_field_value = build_audio_field(
+                if config.tts_enabled:
+                    audio_field_value = build_audio_bundle(
                         config.ankiconnect_url,
-                        tts_text,
+                        lemma=card.lemma,
+                        context=card.context,
                         voice=config.tts_voice,
                         rate=config.tts_rate,
                     )
-                    fields[config.tts_field] = audio_field_value
+                    if audio_field_value:
+                        fields[config.tts_field] = audio_field_value
                 note = {
                     "deckName": config.deck,
                     "modelName": config.note_model,
@@ -202,14 +203,16 @@ def session_command(
             if notes:
                 existing_audio = notes[0]["fields"].get(config.tts_field, {}).get("value")
 
-            if config.tts_enabled and tts_text:
-                if not existing_audio:
-                    fields[config.tts_field] = build_audio_field(
-                        config.ankiconnect_url,
-                        tts_text,
-                        voice=config.tts_voice,
-                        rate=config.tts_rate,
-                    )
+            if config.tts_enabled and audio_tag_count(existing_audio) < 2:
+                audio_field_value = build_audio_bundle(
+                    config.ankiconnect_url,
+                    lemma=card.lemma,
+                    context=card.context,
+                    voice=config.tts_voice,
+                    rate=config.tts_rate,
+                )
+                if audio_field_value:
+                    fields[config.tts_field] = audio_field_value
 
             update_note_fields(config.ankiconnect_url, note_id, fields)
             typer.echo(f"Updated note id: {note_id}", err=True)

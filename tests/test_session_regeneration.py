@@ -25,7 +25,6 @@ def _card_with_lemma(lemma: str) -> Card:
         notes="",
         rarity="common",
         cefr="A1",
-        tts_text=None,
     )
 
 

@@ -19,7 +19,7 @@ CARD_REQUIRED_FIELDS = (
     "cefr",
 )
 
-CARD_OPTIONAL_FIELDS = ("tts_text",)
+CARD_OPTIONAL_FIELDS: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -38,8 +38,6 @@ class Card:
     notes: str
     rarity: str
     cefr: str
-    tts_text: str | None = None
-
     def as_dict(self) -> dict[str, str]:
         data = {
             "lemma": self.lemma,
@@ -57,8 +55,6 @@ class Card:
             "rarity": self.rarity,
             "cefr": self.cefr,
         }
-        if self.tts_text:
-            data["tts_text"] = self.tts_text
         return data
 
 
@@ -71,10 +67,6 @@ def parse_card(payload: dict[str, Any]) -> Card:
         value = payload.get(key)
         if not isinstance(value, str) or not value.strip():
             raise RuntimeError(f"OpenAI returned invalid card JSON: {key!r} must be a non-empty string")
-
-    tts_text = payload.get("tts_text")
-    if tts_text is not None and (not isinstance(tts_text, str) or not tts_text.strip()):
-        raise RuntimeError("OpenAI returned invalid card JSON: 'tts_text' must be a non-empty string")
 
     return Card(
         lemma=payload["lemma"].strip(),
@@ -91,5 +83,4 @@ def parse_card(payload: dict[str, Any]) -> Card:
         notes=payload["notes"].strip(),
         rarity=payload["rarity"].strip(),
         cefr=payload["cefr"].strip(),
-        tts_text=tts_text.strip() if isinstance(tts_text, str) else None,
     )

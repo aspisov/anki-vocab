@@ -7,7 +7,7 @@ import typer
 from rich.console import Console
 
 from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
-from ..core.audio import build_audio_field
+from ..core.audio import audio_tag_count, build_audio_bundle
 from ..core.cleaning import clean_context
 from ..core.config import resolve_config
 from ..core.prompting import render_card
@@ -19,14 +19,32 @@ from ..integrations.openai_client import generate_card
 from .utils import confirm_menu, note_field_value
 
 
-def _prompt_note_id() -> int | None:
+def _parse_note_id_input(raw: str) -> tuple[int, str | None]:
+    if "|" in raw:
+        left, right = raw.split("|", 1)
+        note_id = left.strip()
+        prompt = right.strip()
+        if not prompt:
+            raise ValueError("Prompt is missing after '|'.")
+    else:
+        note_id = raw.strip()
+        prompt = None
+
+    if not note_id.isdigit():
+        raise ValueError("Invalid note id.")
+
+    return int(note_id), prompt
+
+
+def _prompt_note_id() -> tuple[int | None, str | None]:
     while True:
         raw = input("Note id (or 'q' to quit): ").strip()
         if raw.lower() in {"q", "quit"}:
-            return None
-        if raw.isdigit():
-            return int(raw)
-        typer.echo("Invalid note id.", err=True)
+            return None, None
+        try:
+            return _parse_note_id_input(raw)
+        except ValueError as exc:
+            typer.echo(str(exc), err=True)
 
 
 def update_command(
@@ -49,11 +67,18 @@ def update_command(
         tts_enabled=(not no_tts) and config.tts_enabled,
     )
 
+    base_prompt = prompt
+
     while True:
-        current_note_id = note_id if note_id is not None else _prompt_note_id()
+        if note_id is not None:
+            current_note_id = note_id
+            inline_prompt = None
+        else:
+            current_note_id, inline_prompt = _prompt_note_id()
         note_id = None
         if current_note_id is None:
             return
+        effective_prompt = base_prompt if base_prompt is not None else inline_prompt
 
         notes = notes_info(config.ankiconnect_url, [current_note_id])
         if not notes:
@@ -81,7 +106,7 @@ def update_command(
                 api_key=config.openai_api_key,
                 source_language=config.source_language,
                 current_card=current_card,
-                user_prompt=prompt,
+                user_prompt=effective_prompt,
             )
         except Exception as exc:
             typer.echo(f"OpenAI error: {exc}", err=True)
@@ -92,7 +117,7 @@ def update_command(
         if dry_run:
             continue
 
-        if not confirm_menu("Update this note?", default_yes=False):
+        if not confirm_menu("Update this note?", default_yes=True):
             typer.echo("Skipped.", err=True)
             continue
 
@@ -100,15 +125,16 @@ def update_command(
 
         if config.tts_enabled:
             existing_audio = note_field_value(note, config.tts_field)
-            if not existing_audio:
-                tts_text = card.tts_text or card.lemma
-                audio_field_value = build_audio_field(
+            if audio_tag_count(existing_audio) < 2:
+                audio_field_value = build_audio_bundle(
                     config.ankiconnect_url,
-                    tts_text,
+                    lemma=card.lemma,
+                    context=card.context,
                     voice=config.tts_voice,
                     rate=config.tts_rate,
                 )
-                fields[config.tts_field] = audio_field_value
+                if audio_field_value:
+                    fields[config.tts_field] = audio_field_value
 
         update_note_fields(config.ankiconnect_url, current_note_id, fields)
         typer.echo(f"Updated note id: {current_note_id}", err=True)

@@ -19,7 +19,6 @@ CARD_DISPLAY_ORDER = (
     "notes",
     "rarity",
     "cefr",
-    "tts_text",
 )
 
 
