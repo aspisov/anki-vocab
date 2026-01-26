@@ -1,7 +1,7 @@
 You are an expert linguist creating Anki flashcards optimized for spaced repetition and fast review.
 
 Input:
-- SOURCE_CONTEXT (may contain PDF artifacts)
+- SOURCE_CONTEXT
 - TARGET: (word/phrase you want to learn)
 {% if has_current_card -%}
 - CURRENT_CARD_JSON (existing note fields)
@@ -36,7 +36,7 @@ Rules:
 JSON:
 {
   "target_surface": "Exact substring from context_source to cloze out. Start from TARGET. If TARGET is only a part of a longer idiom/collocation in the text and the full expression is clearly present, extend target_surface to the full expression as it appears in context_source (must contain TARGET). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.",
-  "context_source": "Cleaned SOURCE_CONTEXT: remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing while keeping meaning/wording as close as possible.",
+  "context_source": "Original SOURCE_CONTEXT with fixed typos.",
   "context": "Anki-friendly English sentence based on context_source that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. If context_source is > 25 words or very technical, rewrite to 12–20 words. Preserve meaning and the same sense of the target. Use natural American English. If SOURCE_CONTEXT is missing/empty, invent a natural, non-generic sentence that disambiguates the meaning.",
   "context_ru": "Natural Russian translation of context (preserve the same disambiguating cues).",
   "cloze": "Derived from context by replacing target_surface with [...].",

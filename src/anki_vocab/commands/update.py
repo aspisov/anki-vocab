@@ -98,21 +98,24 @@ def update_command(
 
         sentence_clean = clean_context(sentence)
         current_card = note_to_card_payload(note, config.field_map)
-        try:
-            card = generate_card(
-                sentence_clean,
-                existing_word,
-                model=config.openai_model,
-                api_key=config.openai_api_key,
-                source_language=config.source_language,
-                current_card=current_card,
-                user_prompt=effective_prompt,
-            )
-        except Exception as exc:
-            typer.echo(f"OpenAI error: {exc}", err=True)
-            raise typer.Exit(code=4) from exc
-        console = Console(stderr=True)
-        render_card(console, card)
+        tts_only = (effective_prompt or "").strip().lower() == "tts"
+        card = None
+        if not tts_only:
+            try:
+                card = generate_card(
+                    sentence_clean,
+                    existing_word,
+                    model=config.openai_model,
+                    api_key=config.openai_api_key,
+                    source_language=config.source_language,
+                    current_card=current_card,
+                    user_prompt=effective_prompt,
+                )
+            except Exception as exc:
+                typer.echo(f"OpenAI error: {exc}", err=True)
+                raise typer.Exit(code=4) from exc
+            console = Console(stderr=True)
+            render_card(console, card)
 
         if dry_run:
             continue
@@ -121,15 +124,17 @@ def update_command(
             typer.echo("Skipped.", err=True)
             continue
 
-        fields = card_to_fields(card, config.field_map)
+        fields = {} if tts_only else card_to_fields(card, config.field_map)
 
         if config.tts_enabled:
             existing_lemma_audio = note_field_value(note, config.tts_lemma_field)
             existing_context_audio = note_field_value(note, config.tts_context_field)
+            lemma_text = existing_word if tts_only else card.lemma
+            context_text = sentence_clean if tts_only else card.context
             lemma_audio, context_audio = build_audio_fields(
                 config.ankiconnect_url,
-                lemma=card.lemma if not existing_lemma_audio else "",
-                context=card.context if not existing_context_audio else "",
+                lemma=lemma_text if not existing_lemma_audio else "",
+                context=context_text if not existing_context_audio else "",
                 voice=config.tts_voice,
                 rate=config.tts_rate,
             )

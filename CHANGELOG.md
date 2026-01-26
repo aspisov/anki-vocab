@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Allow `update` to accept `prompt=tts` to skip the LLM and only refresh TTS fields.
 - Update inline note-id parsing to accept an optional prompt, and generate lemma/context TTS audio without relying on LLM-provided TTS text.
 - Split TTS audio into separate lemma and context fields with configurable names.
 - Added Typer-based CLI with `session`, `update`, and `config` commands.
