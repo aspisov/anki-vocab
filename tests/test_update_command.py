@@ -222,8 +222,8 @@ def test_update_command_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) ->
                 "fields": {
                     "Word": {"value": "run"},
                     "Context Sentence": {"value": "I run."},
-                    "Audio Lemma": {"value": ""},
-                    "Audio Context": {"value": ""},
+                    "Audio Lemma": {"value": "[sound:old-lemma.mp3]"},
+                    "Audio Context": {"value": "[sound:old-context.mp3]"},
                 },
             }
         ]

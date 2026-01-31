@@ -132,14 +132,12 @@ def update_command(
         fields = {} if tts_only else card_to_fields(card, config.field_map)
 
         if config.tts_enabled:
-            existing_lemma_audio = note_field_value(note, config.tts_lemma_field)
-            existing_context_audio = note_field_value(note, config.tts_context_field)
             lemma_text = existing_word if tts_only else card.lemma
             context_text = context_clean if tts_only else card.context
             lemma_audio, context_audio = build_audio_fields(
                 config.ankiconnect_url,
-                lemma=lemma_text if not existing_lemma_audio else "",
-                context=context_text if not existing_context_audio else "",
+                lemma=lemma_text,
+                context=context_text,
                 voice=config.tts_voice,
                 rate=config.tts_rate,
             )
