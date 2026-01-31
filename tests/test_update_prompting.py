@@ -49,3 +49,14 @@ def test_build_user_content_omits_prompt_when_missing() -> None:
 
     assert "USER_PROMPT" not in content
     assert "CURRENT_CARD_JSON" not in content
+
+
+def test_build_user_content_uses_na_for_missing_sentence() -> None:
+    content = _build_user_content(
+        "   ",
+        "placeholder",
+        current_card=None,
+        user_prompt=None,
+    )
+
+    assert "SENTENCE: N/A" in content

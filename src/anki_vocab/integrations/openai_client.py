@@ -87,7 +87,8 @@ def _build_user_content(
     current_card: dict[str, str] | None,
     user_prompt: str | None,
 ) -> str:
-    user_content = f'SENTENCE: {sentence}\nTARGET: "{word}"'
+    sentence_value = sentence.strip() or "N/A"
+    user_content = f'SENTENCE: {sentence_value}\nTARGET: "{word}"'
     if current_card is not None:
         current_payload = json.dumps(current_card, ensure_ascii=False)
         user_content = f"{user_content}\nCURRENT_CARD_JSON:\n{current_payload}"
