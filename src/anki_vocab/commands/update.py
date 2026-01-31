@@ -92,11 +92,16 @@ def update_command(
             typer.echo("Selected note is missing the word field.", err=True)
             continue
 
-        sentence_field = config.field_map.get("context", "Context Sentence")
-        existing_sentence = note_field_value(note, sentence_field)
-        sentence = existing_sentence or ""
+        context_field = config.field_map.get("context", "Context Sentence")
+        existing_context = note_field_value(note, context_field)
+        context_sentence = existing_context or ""
 
-        sentence_clean = clean_context(sentence)
+        source_field = config.field_map.get("context_source", "Context Sentence Source")
+        existing_source = note_field_value(note, source_field)
+        prompt_sentence = existing_source or context_sentence
+
+        sentence_clean = clean_context(prompt_sentence)
+        context_clean = clean_context(context_sentence)
         current_card = note_to_card_payload(note, config.field_map)
         tts_only = (effective_prompt or "").strip().lower() == "tts"
         card = None
@@ -130,7 +135,7 @@ def update_command(
             existing_lemma_audio = note_field_value(note, config.tts_lemma_field)
             existing_context_audio = note_field_value(note, config.tts_context_field)
             lemma_text = existing_word if tts_only else card.lemma
-            context_text = sentence_clean if tts_only else card.context
+            context_text = context_clean if tts_only else card.context
             lemma_audio, context_audio = build_audio_fields(
                 config.ankiconnect_url,
                 lemma=lemma_text if not existing_lemma_audio else "",

@@ -139,6 +139,64 @@ def test_update_command_uses_inline_prompt(monkeypatch: pytest.MonkeyPatch) -> N
     assert captured["update_note_fields"]["note_id"] == 123
 
 
+def test_update_command_prefers_context_source_for_prompt(monkeypatch: pytest.MonkeyPatch) -> None:
+    field_map = dict(DEFAULT_FIELD_MAP)
+    field_map["lemma"] = "Headword"
+    field_map["context"] = "Sentence"
+    field_map["context_source"] = "Source Sentence"
+
+    config = Config(
+        deck="Test",
+        note_model="English",
+        field_map=field_map,
+        ankiconnect_url="http://anki.test",
+        source_language="en",
+        openai_api_key="sk-test",
+        openai_model="gpt-test",
+        tts_voice="voice",
+        tts_rate="+0%",
+        tts_lemma_field="Audio Lemma",
+        tts_context_field="Audio Context",
+        tts_enabled=False,
+    )
+
+    captured: dict[str, Any] = {}
+
+    def fake_notes_info(_url: str, note_ids: list[int]) -> list[dict[str, Any]]:
+        return [
+            {
+                "noteId": note_ids[0],
+                "fields": {
+                    "Headword": {"value": "run"},
+                    "Sentence": {"value": "I run."},
+                    "Source Sentence": {"value": "Original source."},
+                },
+            }
+        ]
+
+    def fake_generate_card(sentence: str, word: str, **_kwargs: Any) -> Card:
+        captured["sentence"] = sentence
+        captured["word"] = word
+        return _sample_card()
+
+    def fake_update_note_fields(_url: str, note_id: int, fields: dict[str, str]) -> None:
+        captured["update_note_fields"] = {"note_id": note_id, "fields": fields}
+
+    monkeypatch.setattr(update_module, "resolve_config", lambda: config)
+    monkeypatch.setattr(update_module, "notes_info", fake_notes_info)
+    monkeypatch.setattr(update_module, "generate_card", fake_generate_card)
+    monkeypatch.setattr(update_module, "update_note_fields", fake_update_note_fields)
+    monkeypatch.setattr(update_module, "confirm_menu", lambda *args, **kwargs: True)
+    monkeypatch.setattr(update_module, "render_card", lambda *args, **kwargs: None)
+    monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "q")
+
+    update_module.update_command(note_id=123)
+
+    assert captured["sentence"] == "Original source."
+    assert captured["word"] == "run"
+    assert captured["update_note_fields"]["note_id"] == 123
+
+
 def test_update_command_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) -> None:
     config = Config(
         deck="Test",
