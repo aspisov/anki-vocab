@@ -1,6 +1,8 @@
 # Changelog
 
 ## Unreleased
+- Remove misleading Russian-translation note from the Spanish system prompt.
+- Stop asking the model for context_source; inject it from the input sentence (or "N/A") in code.
 - Use "N/A" as context_source when no source context is provided.
 - Update now prefers context_source when sending SOURCE_CONTEXT to the model, preserving original sources.
 - Specify that only the cloze field may contain the "[...]" placeholder; context and context_ru must not.

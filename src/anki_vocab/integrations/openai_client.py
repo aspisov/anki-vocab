@@ -77,6 +77,8 @@ def generate_card(
         raise RuntimeError("OpenAI returned empty response")
 
     payload = json.loads(content)
+    source_context = sentence.strip() or "N/A"
+    payload["context_source"] = source_context
     return parse_card(payload)
 
 
@@ -90,8 +92,10 @@ def _build_user_content(
     sentence_value = sentence.strip() or "N/A"
     user_content = f'SENTENCE: {sentence_value}\nTARGET: "{word}"'
     if current_card is not None:
-        current_payload = json.dumps(current_card, ensure_ascii=False)
-        user_content = f"{user_content}\nCURRENT_CARD_JSON:\n{current_payload}"
+        current_payload = dict(current_card)
+        current_payload.pop("context_source", None)
+        current_payload_json = json.dumps(current_payload, ensure_ascii=False)
+        user_content = f"{user_content}\nCURRENT_CARD_JSON:\n{current_payload_json}"
     if user_prompt:
         user_content = f"{user_content}\nUSER_PROMPT:\n{user_prompt}"
     return user_content
