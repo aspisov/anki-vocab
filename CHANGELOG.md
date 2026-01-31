@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Remove misleading Russian-translation note from the English system prompt.
 - Remove misleading Russian-translation note from the Spanish system prompt.
 - Stop asking the model for context_source; inject it from the input sentence (or "N/A") in code.
 - Use "N/A" as context_source when no source context is provided.
