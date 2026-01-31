@@ -201,18 +201,11 @@ def session_command(
                 typer.echo("No existing note found to update.", err=True)
                 break
 
-            notes = notes_info(config.ankiconnect_url, [note_id])
-            existing_lemma_audio = None
-            existing_context_audio = None
-            if notes:
-                existing_lemma_audio = notes[0]["fields"].get(config.tts_lemma_field, {}).get("value")
-                existing_context_audio = notes[0]["fields"].get(config.tts_context_field, {}).get("value")
-
             if config.tts_enabled:
                 lemma_audio, context_audio = build_audio_fields(
                     config.ankiconnect_url,
-                    lemma=card.lemma if not existing_lemma_audio else "",
-                    context=card.context if not existing_context_audio else "",
+                    lemma=card.lemma,
+                    context=card.context,
                     voice=config.tts_voice,
                     rate=config.tts_rate,
                 )

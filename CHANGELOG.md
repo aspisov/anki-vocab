@@ -12,7 +12,7 @@
 - Refactored core logic into modules and introduced schema validation.
 - Added unit tests for parsing, cleaning, and schema handling.
 - Added Rich-powered menu prompts with arrow-key selection.
-- Removed overwrite-audio option; audio is added only when missing.
+- TTS audio now overwrites existing audio by default.
 - Set max line length to 120 in Ruff configuration.
 - Added regeneration feedback flow with prior attempts passed to the model and updated prompt guidance for synonyms and Russian input handling.
 - Prefer American English in prompt guidance.
