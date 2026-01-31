@@ -101,6 +101,7 @@ def update_command(
         prompt_sentence = existing_source or context_sentence
 
         sentence_clean = clean_context(prompt_sentence)
+        prompt_source = sentence_clean or "N/A"
         context_clean = clean_context(context_sentence)
         current_card = note_to_card_payload(note, config.field_map)
         tts_only = (effective_prompt or "").strip().lower() == "tts"
@@ -119,6 +120,7 @@ def update_command(
             except Exception as exc:
                 typer.echo(f"OpenAI error: {exc}", err=True)
                 raise typer.Exit(code=4) from exc
+            card = replace(card, context_source=prompt_source)
             console = Console(stderr=True)
             render_card(console, card)
 

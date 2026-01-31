@@ -98,6 +98,7 @@ def session_command(
             continue
 
         context_clean = clean_context(context)
+        prompt_source = context_clean or "N/A"
         current_card: dict[str, str] | None = None
         user_prompt: str | None = None
         existing_note_ids: list[int] | None = None
@@ -118,6 +119,7 @@ def session_command(
                 typer.echo(f"OpenAI error: {exc}", err=True)
                 break
 
+            card = replace(card, context_source=prompt_source)
             render_card(console, card)
 
             if dry_run:
