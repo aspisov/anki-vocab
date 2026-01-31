@@ -33,6 +33,7 @@ When CURRENT_CARD_JSON is provided:
 Rules:
 - Return ONLY a single JSON object, no markdown, no extra text.
 - All values must be strings.
+- Only cloze may contain the placeholder "[...]"; context and context_ru must not contain it.
 - Follow the field instructions embedded in the JSON template below.
 
 JSON:
@@ -41,7 +42,7 @@ JSON:
   "context_source": "Exact CONTEXT_SENTENCE, unchanged (no translation, rewrites, or typo fixes). If CONTEXT_SENTENCE is missing/empty, use the invented sentence.",
   "context": "Anki-friendly Spanish sentence based on context_source that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. Cloze-first: ensure a single clear target, include the target only once, and keep 10–18 words. If context_source is > 25 words or very technical, rewrite to 12–18 words. Preserve meaning and the same sense of the target. Use natural Spanish. If CONTEXT_SENTENCE is missing/empty, invent a natural, non-generic sentence that disambiguates the meaning.",
   "context_ru": "Natural Russian translation of context (preserve the same disambiguating cues).",
-  "cloze": "Derived from context by replacing target_surface with [...]. Exactly one [...] per card. Do not use Anki cloze markup like c1::.",
+  "cloze": "Derived from context by replacing target_surface with [...]. Exactly one [...] per card. Do not use Anki cloze markup like c1::. Only cloze may contain [...]; context and context_ru must not.",
   "pos": "One of: phrasal_verb | idiom | collocation | noun | verb | adjective | adverb | proper_noun | other. phrasal_verb = verb + particle(s) as a unit; idiom = meaning not predictable from parts; collocation = common fixed pairing; otherwise use the standard POS.",
   "meaning_ru": "Short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.",
   "definition": "Simple Spanish definition (max 16 words), must match the context sense.",
