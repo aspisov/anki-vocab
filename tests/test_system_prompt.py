@@ -11,6 +11,10 @@ def test_system_prompt_mentions_pattern_notes() -> None:
     assert "N/A" in prompt
     assert "Source language is English" in prompt
     assert "Prefer American English" in prompt
+    assert "Cloze-first" in prompt
+    assert "Exactly one [...] per card" in prompt
+    assert "keep SOURCE_CONTEXT unchanged in context_source" in prompt
+    assert "Exact SOURCE_CONTEXT, unchanged" in prompt
     assert "preposition" in prompt or "particle" in prompt
     assert "Source language is Spanish" not in prompt
 
@@ -20,3 +24,7 @@ def test_system_prompt_mentions_spanish_source_language() -> None:
     assert "Source language is Spanish" in prompt
     assert "Prefer American English" not in prompt
     assert "context/cloze" in prompt
+    assert "Cloze-first" in prompt
+    assert "Exactly one [...] per card" in prompt
+    assert "keep CONTEXT_SENTENCE unchanged in context_source" in prompt
+    assert "Exact CONTEXT_SENTENCE, unchanged" in prompt

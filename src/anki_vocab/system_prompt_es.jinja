@@ -13,10 +13,12 @@ Input:
 General:
 - Source language is Spanish.
 - If CONTEXT_SENTENCE is missing/empty: invent a natural, non-generic sentence that clearly disambiguates the meaning.
-- If CONTEXT_SENTENCE or TARGET is Russian: translate to Spanish first, then proceed.
+- If CONTEXT_SENTENCE or TARGET is Russian: translate to Spanish for reasoning only, but keep CONTEXT_SENTENCE unchanged in context_source.
 - Always output meaning_ru in Russian.
 - Field names like context/cloze are language-neutral; still fill them using Spanish.
+- Never translate, rewrite, or "fix" CONTEXT_SENTENCE when copying it into context_source.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
+- Cloze-first: optimize context/cloze for a single-blank cloze card with typing on Target Surface.
 
 {% if has_current_card -%}
 When CURRENT_CARD_JSON is provided:
@@ -35,11 +37,11 @@ Rules:
 
 JSON:
 {
-  "target_surface": "Exact substring from context_source to cloze out. Start from TARGET. If TARGET is only a part of a longer idiom/collocation in the text and the full expression is clearly present, extend target_surface to the full expression as it appears in context_source (must contain TARGET). If TARGET cannot be found after cleaning, minimally adjust cleaning to preserve the exact TARGET substring.",
-  "context_source": "Cleaned CONTEXT_SENTENCE (Spanish): remove PDF artifacts, broken hyphenation, stray symbols, and weird spacing while keeping meaning/wording as close as possible.",
-  "context": "Anki-friendly Spanish sentence based on context_source that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. If context_source is > 25 words or very technical, rewrite to 12–20 words. Preserve meaning and the same sense of the target. Use natural Spanish. If CONTEXT_SENTENCE is missing/empty, invent a natural, non-generic sentence that disambiguates the meaning.",
+  "target_surface": "Exact substring from context_source to cloze out. Start from TARGET. If TARGET is only a part of a longer idiom/collocation in the text and the full expression is clearly present, extend target_surface to the full expression as it appears in context_source (must contain TARGET). Do not normalize or clean context_source to make TARGET fit; keep original spacing/punctuation.",
+  "context_source": "Exact CONTEXT_SENTENCE, unchanged (no translation, rewrites, or typo fixes). If CONTEXT_SENTENCE is missing/empty, use the invented sentence.",
+  "context": "Anki-friendly Spanish sentence based on context_source that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. Cloze-first: ensure a single clear target, include the target only once, and keep 10–18 words. If context_source is > 25 words or very technical, rewrite to 12–18 words. Preserve meaning and the same sense of the target. Use natural Spanish. If CONTEXT_SENTENCE is missing/empty, invent a natural, non-generic sentence that disambiguates the meaning.",
   "context_ru": "Natural Russian translation of context (preserve the same disambiguating cues).",
-  "cloze": "Derived from context by replacing target_surface with [...].",
+  "cloze": "Derived from context by replacing target_surface with [...]. Exactly one [...] per card. Do not use Anki cloze markup like c1::.",
   "pos": "One of: phrasal_verb | idiom | collocation | noun | verb | adjective | adverb | proper_noun | other. phrasal_verb = verb + particle(s) as a unit; idiom = meaning not predictable from parts; collocation = common fixed pairing; otherwise use the standard POS.",
   "meaning_ru": "Short Russian gloss (2–6 words), not a sentence, strictly matching the context sense.",
   "definition": "Simple Spanish definition (max 16 words), must match the context sense.",

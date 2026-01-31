@@ -137,3 +137,75 @@ def test_update_command_uses_inline_prompt(monkeypatch: pytest.MonkeyPatch) -> N
 
     assert captured["prompt"] == "Update only notes"
     assert captured["update_note_fields"]["note_id"] == 123
+
+
+def test_update_command_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) -> None:
+    config = Config(
+        deck="Test",
+        note_model="English",
+        field_map=DEFAULT_FIELD_MAP,
+        ankiconnect_url="http://anki.test",
+        source_language="en",
+        openai_api_key="sk-test",
+        openai_model="gpt-test",
+        tts_voice="voice",
+        tts_rate="+0%",
+        tts_lemma_field="Audio Lemma",
+        tts_context_field="Audio Context",
+        tts_enabled=True,
+    )
+
+    captured: dict[str, Any] = {}
+
+    def fake_notes_info(url: str, note_ids: list[int]) -> list[dict[str, Any]]:
+        return [
+            {
+                "noteId": note_ids[0],
+                "fields": {
+                    "Word": {"value": "run"},
+                    "Context Sentence": {"value": "I run."},
+                    "Audio Lemma": {"value": ""},
+                    "Audio Context": {"value": ""},
+                },
+            }
+        ]
+
+    def fake_generate_card(*_args: Any, **_kwargs: Any) -> Card:
+        raise AssertionError("generate_card should not be called for tts-only updates")
+
+    def fake_build_audio_fields(
+        _url: str, *, lemma: str, context: str, voice: str, rate: str
+    ) -> tuple[str, str]:
+        captured["audio_args"] = {
+            "lemma": lemma,
+            "context": context,
+            "voice": voice,
+            "rate": rate,
+        }
+        return "[sound:lemma.mp3]", "[sound:context.mp3]"
+
+    def fake_update_note_fields(url: str, note_id: int, fields: dict[str, str]) -> None:
+        captured["update_note_fields"] = {"url": url, "note_id": note_id, "fields": fields}
+
+    monkeypatch.setattr(update_module, "resolve_config", lambda: config)
+    monkeypatch.setattr(update_module, "notes_info", fake_notes_info)
+    monkeypatch.setattr(update_module, "generate_card", fake_generate_card)
+    monkeypatch.setattr(update_module, "build_audio_fields", fake_build_audio_fields)
+    monkeypatch.setattr(update_module, "update_note_fields", fake_update_note_fields)
+    monkeypatch.setattr(update_module, "confirm_menu", lambda *args, **kwargs: True)
+    monkeypatch.setattr(update_module, "render_card", lambda *args, **kwargs: None)
+    monkeypatch.setattr("builtins.input", lambda *_args, **_kwargs: "q")
+
+    update_module.update_command(note_id=123, prompt="tts")
+
+    assert captured["audio_args"] == {
+        "lemma": "run",
+        "context": "I run.",
+        "voice": "voice",
+        "rate": "+0%",
+    }
+    assert captured["update_note_fields"]["note_id"] == 123
+    assert captured["update_note_fields"]["fields"] == {
+        "Audio Lemma": "[sound:lemma.mp3]",
+        "Audio Context": "[sound:context.mp3]",
+    }
