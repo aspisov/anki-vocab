@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Update now prefers context_source when sending SOURCE_CONTEXT to the model, preserving original sources.
 - Specify that only the cloze field may contain the "[...]" placeholder; context and context_ru must not.
 - Ensure system prompts keep context_source as the exact input without translation or rewrites.
 - Optimize prompt guidance for single-blank cloze cards with typing on target surface.
