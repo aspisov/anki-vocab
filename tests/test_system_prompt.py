@@ -3,6 +3,7 @@ from anki_vocab.integrations import openai_client
 
 RULE = 'Only cloze may contain the placeholder "[...]"; context and context_ru must not contain it.'
 NA_RULE = 'missing/empty or equals "N/A"'
+NO_CONTEXT_SOURCE_RULE = "Do not include context_source in output; it is filled by the system."
 
 
 def test_system_prompt_includes_cloze_only_rule_en() -> None:
@@ -30,6 +31,8 @@ def test_system_prompt_handles_na_source_context_en() -> None:
         source_language="en",
     )
     assert NA_RULE in prompt
+    assert '"context_source":' not in prompt
+    assert NO_CONTEXT_SOURCE_RULE in prompt
 
 
 def test_system_prompt_handles_na_source_context_es() -> None:
@@ -39,3 +42,5 @@ def test_system_prompt_handles_na_source_context_es() -> None:
         source_language="es",
     )
     assert NA_RULE in prompt
+    assert '"context_source":' not in prompt
+    assert NO_CONTEXT_SOURCE_RULE in prompt

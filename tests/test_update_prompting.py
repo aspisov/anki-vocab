@@ -60,3 +60,15 @@ def test_build_user_content_uses_na_for_missing_sentence() -> None:
     )
 
     assert "SENTENCE: N/A" in content
+
+
+def test_build_user_content_omits_context_source_from_current_card() -> None:
+    content = _build_user_content(
+        "A test sentence.",
+        "test",
+        current_card={"context_source": "Original source.", "definition": "a check"},
+        user_prompt=None,
+    )
+
+    assert "context_source" not in content
+    assert "definition" in content

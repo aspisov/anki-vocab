@@ -98,9 +98,9 @@ def update_command(
 
         source_field = config.field_map.get("context_source", "Context Sentence Source")
         existing_source = note_field_value(note, source_field)
-        prompt_sentence = existing_source or context_sentence
+        source_context = existing_source or context_sentence
 
-        sentence_clean = clean_context(prompt_sentence)
+        sentence_clean = clean_context(source_context)
         context_clean = clean_context(context_sentence)
         current_card = note_to_card_payload(note, config.field_map)
         tts_only = (effective_prompt or "").strip().lower() == "tts"
