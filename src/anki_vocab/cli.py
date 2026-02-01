@@ -29,7 +29,7 @@ def main(ctx: typer.Context) -> None:
         return
 
     config = resolve_config()
-    if not config.openai_api_key:
+    if config.llm_provider == "openai" and not config.openai_api_key:
         if not sys.stdin.isatty():
             typer.echo(
                 "OpenAI API key is not set. Use `anki-vocab config set openai_api_key ...` or set ANKI_VOCAB_OPENAI_API_KEY.",

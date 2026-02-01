@@ -1,31 +1,13 @@
 import json
-from functools import lru_cache
-from importlib import resources
 
 from dotenv import load_dotenv
-from jinja2 import Environment
 from openai import OpenAI
 
 from ..core.schema import Card, parse_card
+from .llm_prompts import build_user_content as _build_user_content
+from .llm_prompts import system_prompt as _system_prompt
 
 _ENV_LOADED = False
-
-
-@lru_cache(maxsize=2)
-def _system_prompt_template(source_language: str) -> str:
-    template_name = "system_prompt_es.jinja" if source_language == "es" else "system_prompt.jinja"
-    return resources.files("anki_vocab").joinpath(template_name).read_text(encoding="utf-8")
-
-
-@lru_cache(maxsize=8)
-def _system_prompt(*, has_current_card: bool, has_user_prompt: bool, source_language: str) -> str:
-    env = Environment(autoescape=False)
-    template = env.from_string(_system_prompt_template(source_language))
-    return template.render(
-        has_current_card=has_current_card,
-        has_user_prompt=has_user_prompt,
-        source_language=source_language,
-    ).strip()
 
 
 def _ensure_env_loaded() -> None:
@@ -80,22 +62,3 @@ def generate_card(
     source_context = sentence.strip() or "N/A"
     payload["context_source"] = source_context
     return parse_card(payload)
-
-
-def _build_user_content(
-    sentence: str,
-    word: str,
-    *,
-    current_card: dict[str, str] | None,
-    user_prompt: str | None,
-) -> str:
-    sentence_value = sentence.strip() or "N/A"
-    user_content = f'SENTENCE: {sentence_value}\nTARGET: "{word}"'
-    if current_card is not None:
-        current_payload = dict(current_card)
-        current_payload.pop("context_source", None)
-        current_payload_json = json.dumps(current_payload, ensure_ascii=False)
-        user_content = f"{user_content}\nCURRENT_CARD_JSON:\n{current_payload_json}"
-    if user_prompt:
-        user_content = f"{user_content}\nUSER_PROMPT:\n{user_prompt}"
-    return user_content

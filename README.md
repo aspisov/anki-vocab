@@ -1,6 +1,6 @@
 ## anki-card-generator
 
-CLI for generating and maintaining Anki English vocabulary cards from a context sentence and target word, with GPT-5.2 + Edge TTS + AnkiConnect.
+CLI for generating and maintaining Anki English vocabulary cards from a context sentence and target word, with OpenAI (GPT-5.2) or local Ollama (Gemma) + Edge TTS + AnkiConnect.
 
 ### Install (PyPI)
 
@@ -17,10 +17,28 @@ pipx install -i https://test.pypi.org/simple/ anki-vocab --pip-args="--extra-ind
 
 ### Setup
 
-- Put `OPENAI_API_KEY=...` in `.env` (project root) or export it in your shell.
+- If you use OpenAI, put `OPENAI_API_KEY=...` in `.env` (project root) or export it in your shell.
 - Or set in config: `uv run anki-vocab config set openai_api_key YOUR_KEY`.
 - Ensure AnkiConnect is running at `http://127.0.0.1:8765`.
 - Optional: initialize config with `uv run anki-vocab config init`.
+
+### Ollama (local Gemma)
+
+- Ensure Ollama is running locally (default `http://127.0.0.1:11434`).
+- Pull your model (example): `ollama pull gemma2:2b`.
+- Configure the CLI:
+
+```bash
+uv run anki-vocab config set llm_provider ollama
+uv run anki-vocab config set ollama_model gemma2:2b
+uv run anki-vocab config set ollama_url http://127.0.0.1:11434
+```
+
+You can also override per command:
+
+```bash
+uv run anki-vocab session --llm-provider ollama --ollama-model gemma2:2b
+```
 
 ### Run (uv)
 

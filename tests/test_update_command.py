@@ -39,8 +39,11 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
         field_map=field_map,
         ankiconnect_url="http://anki.test",
         source_language="en",
+        llm_provider="openai",
         openai_api_key="sk-test",
         openai_model="gpt-test",
+        ollama_url="http://ollama.test",
+        ollama_model="gemma-test",
         tts_voice="voice",
         tts_rate="+0%",
         tts_lemma_field="Audio Lemma",
@@ -62,7 +65,7 @@ def test_update_command_uses_note_id_and_field_map(monkeypatch: pytest.MonkeyPat
             }
         ]
 
-    def fake_generate_card(sentence: str, word: str, **kwargs: Any) -> Card:
+    def fake_generate_card(_config: Config, sentence: str, word: str, **kwargs: Any) -> Card:
         captured["sentence"] = sentence
         captured["word"] = word
         captured["prompt"] = kwargs.get("user_prompt")
@@ -95,8 +98,11 @@ def test_update_command_uses_inline_prompt(monkeypatch: pytest.MonkeyPatch) -> N
         field_map=DEFAULT_FIELD_MAP,
         ankiconnect_url="http://anki.test",
         source_language="en",
+        llm_provider="openai",
         openai_api_key="sk-test",
         openai_model="gpt-test",
+        ollama_url="http://ollama.test",
+        ollama_model="gemma-test",
         tts_voice="voice",
         tts_rate="+0%",
         tts_lemma_field="Audio Lemma",
@@ -117,7 +123,7 @@ def test_update_command_uses_inline_prompt(monkeypatch: pytest.MonkeyPatch) -> N
             }
         ]
 
-    def fake_generate_card(sentence: str, word: str, **kwargs: Any) -> Card:
+    def fake_generate_card(_config: Config, sentence: str, word: str, **kwargs: Any) -> Card:
         captured["prompt"] = kwargs.get("user_prompt")
         return _sample_card()
 
@@ -151,8 +157,11 @@ def test_update_command_prefers_context_source_for_prompt(monkeypatch: pytest.Mo
         field_map=field_map,
         ankiconnect_url="http://anki.test",
         source_language="en",
+        llm_provider="openai",
         openai_api_key="sk-test",
         openai_model="gpt-test",
+        ollama_url="http://ollama.test",
+        ollama_model="gemma-test",
         tts_voice="voice",
         tts_rate="+0%",
         tts_lemma_field="Audio Lemma",
@@ -174,7 +183,7 @@ def test_update_command_prefers_context_source_for_prompt(monkeypatch: pytest.Mo
             }
         ]
 
-    def fake_generate_card(sentence: str, word: str, **_kwargs: Any) -> Card:
+    def fake_generate_card(_config: Config, sentence: str, word: str, **_kwargs: Any) -> Card:
         captured["sentence"] = sentence
         captured["word"] = word
         return _sample_card()
@@ -204,8 +213,11 @@ def test_update_command_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) ->
         field_map=DEFAULT_FIELD_MAP,
         ankiconnect_url="http://anki.test",
         source_language="en",
+        llm_provider="openai",
         openai_api_key="sk-test",
         openai_model="gpt-test",
+        ollama_url="http://ollama.test",
+        ollama_model="gemma-test",
         tts_voice="voice",
         tts_rate="+0%",
         tts_lemma_field="Audio Lemma",

@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Add Ollama (Gemma) provider support with CLI/config options and shared LLM routing.
 - Remove misleading Russian-translation note from the English system prompt.
 - Remove misleading Russian-translation note from the Spanish system prompt.
 - Stop asking the model for context_source; inject it from the input sentence (or "N/A") in code.

@@ -33,8 +33,11 @@ class Config:
     field_map: dict[str, str]
     ankiconnect_url: str
     source_language: str
+    llm_provider: str
     openai_api_key: str
     openai_model: str
+    ollama_url: str
+    ollama_model: str
     tts_voice: str
     tts_rate: str
     tts_lemma_field: str
@@ -48,8 +51,11 @@ DEFAULT_CONFIG = Config(
     field_map=DEFAULT_FIELD_MAP,
     ankiconnect_url="http://127.0.0.1:8765",
     source_language="en",
+    llm_provider="openai",
     openai_api_key="",
     openai_model="gpt-5.2",
+    ollama_url="http://127.0.0.1:11434",
+    ollama_model="gemma2:2b",
     tts_voice="en-US-AvaNeural",
     tts_rate="+0%",
     tts_lemma_field="Audio Lemma",
@@ -63,8 +69,11 @@ DEFAULT_CONFIG_DICT = {
     "field_map": DEFAULT_FIELD_MAP,
     "ankiconnect_url": DEFAULT_CONFIG.ankiconnect_url,
     "source_language": DEFAULT_CONFIG.source_language,
+    "llm_provider": DEFAULT_CONFIG.llm_provider,
     "openai_api_key": DEFAULT_CONFIG.openai_api_key,
     "openai_model": DEFAULT_CONFIG.openai_model,
+    "ollama_url": DEFAULT_CONFIG.ollama_url,
+    "ollama_model": DEFAULT_CONFIG.ollama_model,
     "tts": {
         "voice": DEFAULT_CONFIG.tts_voice,
         "rate": DEFAULT_CONFIG.tts_rate,
@@ -114,8 +123,11 @@ def resolve_config() -> Config:
         "ANKI_VOCAB_NOTE_MODEL": ("note_model", str),
         "ANKI_VOCAB_ANKICONNECT_URL": ("ankiconnect_url", str),
         "ANKI_VOCAB_SOURCE_LANGUAGE": ("source_language", str),
+        "ANKI_VOCAB_LLM_PROVIDER": ("llm_provider", str),
         "ANKI_VOCAB_OPENAI_API_KEY": ("openai_api_key", str),
         "ANKI_VOCAB_OPENAI_MODEL": ("openai_model", str),
+        "ANKI_VOCAB_OLLAMA_URL": ("ollama_url", str),
+        "ANKI_VOCAB_OLLAMA_MODEL": ("ollama_model", str),
         "ANKI_VOCAB_TTS_VOICE": ("tts.voice", str),
         "ANKI_VOCAB_TTS_RATE": ("tts.rate", str),
         "ANKI_VOCAB_TTS_FIELD": ("tts.field", str),
@@ -151,14 +163,21 @@ def resolve_config() -> Config:
         tts_config.get("context_field", fallback_field or DEFAULT_CONFIG.tts_context_field)
     )
 
+    provider = str(merged.get("llm_provider", DEFAULT_CONFIG.llm_provider)).strip().lower()
+    if provider not in {"openai", "ollama"}:
+        raise ValueError("llm_provider must be 'openai' or 'ollama'")
+
     return Config(
         deck=str(merged.get("deck", DEFAULT_CONFIG.deck)),
         note_model=str(merged.get("note_model", DEFAULT_CONFIG.note_model)),
         field_map={str(k): str(v) for k, v in field_map.items()},
         ankiconnect_url=str(merged.get("ankiconnect_url", DEFAULT_CONFIG.ankiconnect_url)),
         source_language=str(merged.get("source_language", DEFAULT_CONFIG.source_language)),
+        llm_provider=provider,
         openai_api_key=str(merged.get("openai_api_key", DEFAULT_CONFIG.openai_api_key)),
         openai_model=str(merged.get("openai_model", DEFAULT_CONFIG.openai_model)),
+        ollama_url=str(merged.get("ollama_url", DEFAULT_CONFIG.ollama_url)),
+        ollama_model=str(merged.get("ollama_model", DEFAULT_CONFIG.ollama_model)),
         tts_voice=str(tts_config.get("voice", DEFAULT_CONFIG.tts_voice)),
         tts_rate=str(tts_config.get("rate", DEFAULT_CONFIG.tts_rate)),
         tts_lemma_field=tts_lemma_field,
@@ -196,8 +215,11 @@ def config_as_dict(config: Config) -> dict[str, Any]:
         "field_map": dict(config.field_map),
         "ankiconnect_url": config.ankiconnect_url,
         "source_language": config.source_language,
+        "llm_provider": config.llm_provider,
         "openai_api_key": config.openai_api_key,
         "openai_model": config.openai_model,
+        "ollama_url": config.ollama_url,
+        "ollama_model": config.ollama_model,
         "tts": {
             "voice": config.tts_voice,
             "rate": config.tts_rate,

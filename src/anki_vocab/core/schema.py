@@ -61,12 +61,12 @@ class Card:
 def parse_card(payload: dict[str, Any]) -> Card:
     missing = [key for key in CARD_REQUIRED_FIELDS if key not in payload]
     if missing:
-        raise RuntimeError(f"OpenAI returned invalid card JSON: missing {missing}")
+        raise RuntimeError(f"Model returned invalid card JSON: missing {missing}")
 
     for key in CARD_REQUIRED_FIELDS:
         value = payload.get(key)
         if not isinstance(value, str) or not value.strip():
-            raise RuntimeError(f"OpenAI returned invalid card JSON: {key!r} must be a non-empty string")
+            raise RuntimeError(f"Model returned invalid card JSON: {key!r} must be a non-empty string")
 
     return Card(
         lemma=payload["lemma"].strip(),

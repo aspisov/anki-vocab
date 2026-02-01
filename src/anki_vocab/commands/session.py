@@ -18,7 +18,7 @@ from ..integrations.ankiconnect import (
     notes_info,
     update_note_fields,
 )
-from ..integrations.openai_client import generate_card
+from ..integrations.llm_client import generate_card
 from .utils import select_menu, select_note_id
 
 
@@ -61,6 +61,11 @@ def session_command(
     deck: Annotated[str | None, typer.Option("--deck", help="Target Anki deck.")] = None,
     note_model: Annotated[str | None, typer.Option("--note-model", help="Anki note model name.")] = None,
     openai_model: Annotated[str | None, typer.Option("--openai-model", help="OpenAI model name.")] = None,
+    llm_provider: Annotated[
+        str | None, typer.Option("--llm-provider", help="LLM provider: openai or ollama.")
+    ] = None,
+    ollama_model: Annotated[str | None, typer.Option("--ollama-model", help="Ollama model name.")] = None,
+    ollama_url: Annotated[str | None, typer.Option("--ollama-url", help="Ollama base URL.")] = None,
     voice: Annotated[str | None, typer.Option("--voice", help="Edge TTS voice.")] = None,
     rate: Annotated[str | None, typer.Option("--rate", help="Edge TTS rate.")] = None,
     yes: Annotated[bool, typer.Option("--yes", help="Auto-accept default actions.")] = False,
@@ -73,6 +78,9 @@ def session_command(
         deck=deck or config.deck,
         note_model=note_model or config.note_model,
         openai_model=openai_model or config.openai_model,
+        llm_provider=llm_provider or config.llm_provider,
+        ollama_model=ollama_model or config.ollama_model,
+        ollama_url=ollama_url or config.ollama_url,
         tts_voice=voice or config.tts_voice,
         tts_rate=rate or config.tts_rate,
         tts_enabled=(not no_tts) and config.tts_enabled,
@@ -106,16 +114,14 @@ def session_command(
         while True:
             try:
                 card = generate_card(
+                    config,
                     context_clean,
                     word,
-                    model=config.openai_model,
-                    api_key=config.openai_api_key,
-                    source_language=config.source_language,
                     current_card=current_card,
                     user_prompt=user_prompt,
                 )
             except Exception as exc:
-                typer.echo(f"OpenAI error: {exc}", err=True)
+                typer.echo(f"LLM error ({config.llm_provider}): {exc}", err=True)
                 break
 
             render_card(console, card)
