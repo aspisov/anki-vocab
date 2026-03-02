@@ -152,7 +152,7 @@ def select_note_id(notes: list[dict[str, Any]], field_map: dict[str, str]) -> in
 
     while True:
         raw = input("Note id: ").strip()
-        if raw.lower() in {"q", "quit"}:
+        if raw.lower() in {"q"}:
             raise typer.Abort()
         if raw.isdigit():
             return int(raw)

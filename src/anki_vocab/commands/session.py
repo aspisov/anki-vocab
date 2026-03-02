@@ -26,7 +26,7 @@ def _parse_session_line(line: str) -> tuple[str, str]:
     stripped = line.strip()
     if not stripped:
         return "", ""
-    if stripped in {":quit", ":q"}:
+    if stripped in {"q"}:
         raise typer.Exit()
 
     if "|" in stripped:
@@ -87,7 +87,7 @@ def session_command(
     )
 
     console = Console(stderr=True)
-    typer.echo("Session started. Use ':quit'.", err=True)
+    typer.echo("Session started. Use 'q' to quit.", err=True)
 
     while True:
         try:

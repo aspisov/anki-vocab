@@ -9,8 +9,10 @@ help:
 	@echo "  build               - Build the package"
 	@echo "  release-testpypi   - Release the package to TestPyPI"
 	@echo "  release-pypi       - Release the package to PyPI"
-run:
-	uv run anki-vocab
+add:
+	uv run anki-vocab session
+update:
+	uv run anki-vocab update
 fmt:
 	uv run pre-commit run --all-files
 test:

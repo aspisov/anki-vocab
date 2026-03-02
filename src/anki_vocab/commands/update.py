@@ -19,6 +19,9 @@ from ..integrations.llm_client import generate_card
 from .utils import confirm_menu, note_field_value
 
 
+DEFAULT_UPDATE_PROMPT = "make target predictable from context"
+
+
 def _parse_note_id_input(raw: str) -> tuple[int, str | None]:
     if "|" in raw:
         left, right = raw.split("|", 1)
@@ -39,7 +42,7 @@ def _parse_note_id_input(raw: str) -> tuple[int, str | None]:
 def _prompt_note_id() -> tuple[int | None, str | None]:
     while True:
         raw = input("Note id (or 'q' to quit): ").strip()
-        if raw.lower() in {"q", "quit"}:
+        if raw.lower() in {"q"}:
             return None, None
         try:
             return _parse_note_id_input(raw)
@@ -87,6 +90,8 @@ def update_command(
         if current_note_id is None:
             return
         effective_prompt = base_prompt if base_prompt is not None else inline_prompt
+        if effective_prompt is None:
+            effective_prompt = DEFAULT_UPDATE_PROMPT
 
         notes = notes_info(config.ankiconnect_url, [current_note_id])
         if not notes:

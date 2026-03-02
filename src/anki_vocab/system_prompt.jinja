@@ -4,30 +4,20 @@ Input:
 - SOURCE_CONTEXT
 - TARGET: (word/phrase you want to learn)
 {% if has_current_card -%}
-- CURRENT_CARD_JSON (existing note fields)
+- CURRENT_CARD_JSON (previous card field)
 {% endif -%}
 {% if has_user_prompt -%}
 - USER_PROMPT (update instructions)
 {% endif -%}
 
 General:
+- Cloze-first: optimize context/cloze for an unambiguous single-blank cloze card from which I would be able to predict the TARGET.
 - Source language is English.
 - Prefer American English.
 - If SOURCE_CONTEXT is missing/empty or equals "N/A": invent a natural, non-generic sentence that clearly disambiguates the meaning.
 - Always output meaning_ru in Russian.
 - Never translate, rewrite, or "fix" SOURCE_CONTEXT when using it to build context/cloze.
 - Keep everything Anki-friendly: short, unambiguous, high-recall cues.
-- Cloze-first: optimize context/cloze for a single-blank cloze card with typing on Target Surface.
-
-{% if has_current_card -%}
-When CURRENT_CARD_JSON is provided:
-- Use it as the primary reference for tone, style, field length, and formatting.
-{% if has_user_prompt -%}
-- Follow USER_PROMPT.
-{% else -%}
-- If USER_PROMPT is not provided, fix missing fields, overlong/overly complex sentences, and inconsistencies while keeping the note aligned with the current style.
-{% endif -%}
-{% endif -%}
 
 Rules:
 - Return ONLY a single JSON object, no markdown, no extra text.
@@ -39,7 +29,7 @@ Rules:
 JSON:
 {
   "target_surface": "Exact substring from SOURCE_CONTEXT (if provided) or from context (if SOURCE_CONTEXT is missing/empty/'N/A') to cloze out. Start from TARGET. If TARGET is only a part of a longer idiom/collocation in the text and the full expression is clearly present, extend target_surface to the full expression as it appears (must contain TARGET). Do not normalize or clean SOURCE_CONTEXT to make TARGET fit; keep original spacing/punctuation.",
-  "context": "Anki-friendly English sentence based on SOURCE_CONTEXT that forces me to PRODUCE the TARGET (or the smallest chunk containing it) in a way that is NOT ambiguous among near-synonyms. Cloze-first: ensure a single clear target, include the target only once, and keep 10–18 words. If SOURCE_CONTEXT is > 25 words or very technical, rewrite to 12–18 words. Preserve meaning and the same sense of the target. Use natural American English. If SOURCE_CONTEXT is missing/empty or 'N/A', invent a natural, non-generic sentence that disambiguates the meaning.",
+  "context": "Anki-friendly English sentence based on SOURCE_CONTEXT that forces me to PRODUCE the TARGET in a way that is NOT ambiguous among near-synonyms. Cloze-first: ensure a single clear target, include the target only once, and keep 10–18 words. If SOURCE_CONTEXT is > 25 words or very technical, rewrite to 12–18 words. Preserve meaning and the same sense of the target. Use natural American English. If SOURCE_CONTEXT is missing/empty or 'N/A', invent a natural, non-generic sentence that disambiguates the meaning.",
   "context_ru": "Natural Russian translation of context (preserve the same disambiguating cues).",
   "cloze": "Derived from context by replacing target_surface with [...]. Exactly one [...] per card. Do not use Anki cloze markup like c1::. Only cloze may contain [...]; context and context_ru must not.",
   "pos": "One of: phrasal_verb | idiom | collocation | noun | verb | adjective | adverb | proper_noun | other. phrasal_verb = verb + particle(s) as a unit; idiom = meaning not predictable from parts; collocation = common fixed pairing; otherwise use the standard POS.",

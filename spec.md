@@ -8,8 +8,6 @@ Status: Current implemented behavior contract
 `anki-vocab` is a CLI that creates and updates Anki vocabulary notes from:
 - a target word or phrase
 - an optional source context sentence
-- LLM-generated card content
-- optional generated audio (TTS)
 
 Primary integrations:
 - AnkiConnect HTTP API
@@ -285,7 +283,8 @@ Invalid manual forms:
 
 Prompt precedence:
 - if `--prompt` is provided, it overrides inline prompt
-- otherwise inline prompt is used
+- else if inline prompt is provided, it is used
+- else default to `make target predictable from context`
 
 ### 9.2 Update flow
 
