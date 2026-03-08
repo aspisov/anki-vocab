@@ -81,7 +81,6 @@ DEFAULT_CONFIG_DICT = {
         "context_field": DEFAULT_CONFIG.tts_context_field,
         "enabled": DEFAULT_CONFIG.tts_enabled,
     },
-    "session": {},
 }
 
 
@@ -227,5 +226,4 @@ def config_as_dict(config: Config) -> dict[str, Any]:
             "context_field": config.tts_context_field,
             "enabled": config.tts_enabled,
         },
-        "session": {},
     }

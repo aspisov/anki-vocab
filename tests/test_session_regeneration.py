@@ -79,7 +79,7 @@ def test_session_regeneration_refreshes_note_lookup(monkeypatch: pytest.MonkeyPa
     monkeypatch.setattr(session_module, "render_card", lambda *args, **kwargs: None)
     monkeypatch.setattr("builtins.input", fake_input)
 
-    session_module.session_command(yes=False, no_tts=True, dry_run=False)
+    session_module.session_command()
 
     assert len(queries) == 2
     assert '"alpha"' in queries[0]

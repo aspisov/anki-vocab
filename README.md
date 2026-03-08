@@ -37,28 +37,29 @@ uv run anki-vocab config set ollama_url http://127.0.0.1:11434
 You can also override per command:
 
 ```bash
-uv run anki-vocab session --llm-provider ollama --ollama-model gemma2:2b
+ANKI_VOCAB_LLM_PROVIDER=ollama ANKI_VOCAB_OLLAMA_MODEL=gemma2:2b uv run anki-vocab
 ```
 
 ### Run (uv)
 
-- Interactive session (single-line capture):
+- Interactive session:
 
 ```bash
-uv run anki-vocab session
+uv run anki-vocab
 ```
-Use `context sentence | word`, `word`, or `:quit`.
+Use:
 
-- Update existing cards (loops for more note ids):
+- `context sentence | word` to add a note from context
+- `word` to add a note without context
+- `123456` to update note `123456` with the default prompt
+- `123456 | Refine the definition` to update with a custom prompt
+- `123456 | tts` to regenerate audio only
+- `q` to quit
+
+- Config remains available:
 
 ```bash
-uv run anki-vocab update --note-id 123456 --prompt "Refine the definition for academic usage."
-```
-
-- Dry run:
-
-```bash
-uv run anki-vocab session --dry-run
+uv run anki-vocab config show
 ```
 
 ### Alternative entrypoints

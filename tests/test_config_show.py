@@ -30,3 +30,4 @@ def test_config_show_redacts_openai_key(monkeypatch, capsys) -> None:
 
     assert "sk-test" not in output
     assert '"openai_api_key": "********"' in output
+    assert '"session"' not in output
