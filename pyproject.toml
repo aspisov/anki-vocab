@@ -34,7 +34,7 @@ dependencies = [
 ]
 
 [project.scripts]
-anki-vocab = "anki_vocab.cli:cli"
+anki-vocab = "anki_vocab.cli:app"
 
 [build-system]
 requires = ["setuptools>=69", "wheel"]

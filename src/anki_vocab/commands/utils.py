@@ -11,6 +11,8 @@ from rich.console import Console, Group
 from rich.live import Live
 from rich.text import Text
 
+from ..core.ankimapping import note_field_value
+
 
 _CONSOLE = Console(stderr=True)
 
@@ -119,16 +121,6 @@ def confirm_menu(title: str, *, default_yes: bool = False) -> bool:
     options = ["Yes", "No"]
     default_index = 0 if default_yes else 1
     return select_menu(title, options, default_index=default_index) == 0
-
-
-def note_field_value(note: dict[str, Any], field_name: str) -> str | None:
-    fields = note.get("fields", {})
-    entry = fields.get(field_name)
-    if isinstance(entry, dict):
-        value = entry.get("value")
-        if isinstance(value, str):
-            return value.strip()
-    return None
 
 
 def format_note_summary(note: dict[str, Any], field_map: dict[str, str]) -> str:

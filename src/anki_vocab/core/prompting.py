@@ -1,30 +1,12 @@
 from rich.console import Console
 from rich.text import Text
 
-from .schema import Card
-
-
-CARD_DISPLAY_ORDER = (
-    "lemma",
-    "target_surface",
-    "pos",
-    "meaning_ru",
-    "definition",
-    "context_source",
-    "context",
-    "cloze",
-    "context_ru",
-    "pattern",
-    "synonyms",
-    "notes",
-    "rarity",
-    "cefr",
-)
+from .schema import CARD_FIELDS, Card
 
 
 def format_card_for_display(card: Card) -> Text:
     data = card.as_dict()
-    keys = [key for key in CARD_DISPLAY_ORDER if key in data]
+    keys = [key for key in CARD_FIELDS if key in data]
     keys.extend(sorted(k for k in data.keys() if k not in keys))
 
     max_key_len = max((len(key) for key in keys), default=0)

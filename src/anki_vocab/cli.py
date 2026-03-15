@@ -33,7 +33,3 @@ def main(ctx: typer.Context) -> None:
         update_config_value(config_path(), "openai_api_key", api_key)
 
     session_command()
-
-
-def cli() -> None:
-    app()

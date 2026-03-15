@@ -5,14 +5,14 @@ from dataclasses import dataclass
 import typer
 from rich.console import Console
 
-from ..core.ankimapping import card_to_fields, note_to_card_payload, word_field_name
+from ..core.ankimapping import card_to_fields, note_field_value, note_to_card_payload, word_field_name
 from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
 from ..core.prompting import render_card
 from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
 from ..integrations.llm_client import generate_card
-from .utils import confirm_menu, note_field_value, select_menu, select_note_id
+from .utils import confirm_menu, select_menu, select_note_id
 
 DEFAULT_UPDATE_PROMPT = "make target predictable from context"
 
