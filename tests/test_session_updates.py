@@ -186,20 +186,21 @@ def test_session_update_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) ->
     def fake_generate_card(*_args: Any, **_kwargs: Any) -> Card:
         raise AssertionError("generate_card should not be called for tts-only updates")
 
-    def fake_build_audio_fields(
-        _url: str,
+    def fake_attach_audio_fields(
+        _config: Config,
+        fields: dict[str, str],
         *,
         lemma: str,
         context: str,
-        voice: str,
-        rate: str,
     ) -> tuple[str, str]:
         captured["audio_args"] = {
             "lemma": lemma,
             "context": context,
-            "voice": voice,
-            "rate": rate,
+            "voice": _config.tts_voice,
+            "rate": _config.tts_rate,
         }
+        fields["Audio Lemma"] = "[sound:lemma.mp3]"
+        fields["Audio Context"] = "[sound:context.mp3]"
         return "[sound:lemma.mp3]", "[sound:context.mp3]"
 
     def fake_update_note_fields(_url: str, note_id: int, fields: dict[str, str]) -> None:
@@ -209,7 +210,7 @@ def test_session_update_tts_prompt_skips_llm(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setattr(session_module, "resolve_config", lambda: config)
     monkeypatch.setattr(session_module, "notes_info", fake_notes_info)
     monkeypatch.setattr(session_module, "generate_card", fake_generate_card)
-    monkeypatch.setattr(session_module, "build_audio_fields", fake_build_audio_fields)
+    monkeypatch.setattr(session_module, "attach_audio_fields", fake_attach_audio_fields)
     monkeypatch.setattr(session_module, "update_note_fields", fake_update_note_fields)
     monkeypatch.setattr(session_module, "confirm_menu", lambda *args, **kwargs: True)
     monkeypatch.setattr(session_module, "render_card", lambda *args, **kwargs: None)

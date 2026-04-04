@@ -6,11 +6,11 @@ import typer
 from rich.console import Console
 
 from ..core.ankimapping import card_to_fields, note_field_value, note_to_card_payload, word_field_name
-from ..core.audio import build_audio_fields
 from ..core.cleaning import clean_context
 from ..core.config import Config, resolve_config
+from ..core.note_builder import add_card_note, attach_audio_fields
 from ..core.prompting import render_card
-from ..integrations.ankiconnect import add_note, find_notes, notes_info, update_note_fields
+from ..integrations.ankiconnect import find_notes, notes_info, update_note_fields
 from ..integrations.llm_client import generate_card
 from .utils import confirm_menu, select_menu, select_note_id
 
@@ -69,29 +69,6 @@ def _pick_existing_note(config: Config, note_ids: list[int], *, allow_pick: bool
     return select_note_id(notes, config.field_map)
 
 
-def _attach_audio_fields(
-    config: Config,
-    fields: dict[str, str],
-    *,
-    lemma: str,
-    context: str,
-) -> tuple[str | None, str | None]:
-    if not config.tts_enabled:
-        return None, None
-    lemma_audio, context_audio = build_audio_fields(
-        config.ankiconnect_url,
-        lemma=lemma,
-        context=context,
-        voice=config.tts_voice,
-        rate=config.tts_rate,
-    )
-    if lemma_audio:
-        fields[config.tts_lemma_field] = lemma_audio
-    if context_audio:
-        fields[config.tts_context_field] = context_audio
-    return lemma_audio, context_audio
-
-
 def _run_add_request(config: Config, console: Console, request: AddRequest) -> bool:
     context_clean = clean_context(request.context)
     current_card: dict[str, str] | None = None
@@ -147,29 +124,16 @@ def _run_add_request(config: Config, console: Console, request: AddRequest) -> b
             typer.echo("Unknown action.", err=True)
             continue
 
-        fields = card_to_fields(card, config.field_map)
-
         if action == "a":
-            lemma_audio, context_audio = _attach_audio_fields(
-                config,
-                fields,
-                lemma=card.lemma,
-                context=card.context,
-            )
-            note = {
-                "deckName": config.deck,
-                "modelName": config.note_model,
-                "fields": fields,
-                "options": {"allowDuplicate": False},
-                "tags": ["auto"] + (["tts"] if (lemma_audio or context_audio) else []),
-            }
             try:
-                new_id = add_note(config.ankiconnect_url, note)
+                new_id = add_card_note(config, card)
             except Exception as exc:
                 typer.echo(f"AnkiConnect error: {exc}", err=True)
                 continue
             typer.echo(f"Added note id: {new_id}", err=True)
             return True
+
+        fields = card_to_fields(card, config.field_map)
 
         if not existing_note_ids:
             typer.echo("No existing note found to update.", err=True)
@@ -180,7 +144,7 @@ def _run_add_request(config: Config, console: Console, request: AddRequest) -> b
             typer.echo("No existing note found to update.", err=True)
             return True
 
-        _attach_audio_fields(
+        attach_audio_fields(
             config,
             fields,
             lemma=card.lemma,
@@ -236,7 +200,7 @@ def _run_update_request(config: Config, console: Console, request: UpdateRequest
     fields = {} if tts_only else card_to_fields(card, config.field_map)
     lemma_text = existing_word if tts_only else card.lemma
     context_text = context_clean if tts_only else card.context
-    _attach_audio_fields(
+    attach_audio_fields(
         config,
         fields,
         lemma=lemma_text,

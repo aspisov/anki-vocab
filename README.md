@@ -56,6 +56,35 @@ Use:
 - `123456 | tts` to regenerate audio only
 - `q` to quit
 
+### Direct Add For Agents
+
+If you already have every card field and just want to add the note with the configured TTS pipeline, use:
+
+```bash
+uv run anki-vocab add \
+  --lemma run \
+  --target-surface run \
+  --pos verb \
+  --meaning-ru "бежать" \
+  --definition "to move swiftly" \
+  --context-source "I run every morning." \
+  --context "I run every morning before work." \
+  --cloze "I [...] every morning before work." \
+  --context-ru "Я бегаю каждое утро перед работой." \
+  --pattern "run + adverbial" \
+  --synonyms "jog, sprint" \
+  --notes "Common everyday verb." \
+  --rarity Common \
+  --cefr A2
+```
+
+Notes:
+
+- All fields are required and must be non-empty strings.
+- Use `N/A` instead of leaving optional-looking fields blank.
+- The command prints the new note id to stdout.
+- TTS is attached when `tts.enabled` is true in config.
+
 - Config remains available:
 
 ```bash

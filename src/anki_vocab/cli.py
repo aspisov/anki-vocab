@@ -2,6 +2,7 @@ import sys
 
 import typer
 
+from .commands.add import add_card_command
 from .commands.config import config_app
 from .commands.session import session_command
 from .core.config import config_path, resolve_config, update_config_value
@@ -11,6 +12,7 @@ app = typer.Typer(
     invoke_without_command=True,
 )
 app.add_typer(config_app, name="config")
+app.command("add")(add_card_command)
 
 
 @app.callback()

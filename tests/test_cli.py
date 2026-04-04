@@ -3,6 +3,7 @@ from __future__ import annotations
 from typer.testing import CliRunner
 
 from anki_vocab import cli as cli_module
+from anki_vocab.commands import add as add_module
 from anki_vocab.core.config import Config, DEFAULT_FIELD_MAP
 
 
@@ -47,6 +48,52 @@ def test_config_command_does_not_start_session(monkeypatch) -> None:
     result = runner.invoke(cli_module.app, ["config", "path"])
 
     assert result.exit_code == 0
+
+
+def test_add_command_does_not_start_session(monkeypatch) -> None:
+    runner = CliRunner()
+
+    monkeypatch.setattr(cli_module, "session_command", lambda: (_ for _ in ()).throw(AssertionError("should not run")))
+    monkeypatch.setattr(add_module, "resolve_config", _config)
+    monkeypatch.setattr(add_module, "add_card_note", lambda *_args, **_kwargs: 42)
+
+    result = runner.invoke(
+        cli_module.app,
+        [
+            "add",
+            "--lemma",
+            "run",
+            "--target-surface",
+            "run",
+            "--pos",
+            "verb",
+            "--meaning-ru",
+            "бежать",
+            "--definition",
+            "to move swiftly",
+            "--context-source",
+            "I run every morning.",
+            "--context",
+            "I run every morning before work.",
+            "--cloze",
+            "I [...] every morning before work.",
+            "--context-ru",
+            "Я бегаю каждое утро перед работой.",
+            "--pattern",
+            "run + adverbial",
+            "--synonyms",
+            "jog, sprint",
+            "--notes",
+            "Common everyday verb.",
+            "--rarity",
+            "Common",
+            "--cefr",
+            "A2",
+        ],
+    )
+
+    assert result.exit_code == 0
+    assert result.output.strip() == "42"
 
 
 def test_removed_session_command_is_not_available() -> None:

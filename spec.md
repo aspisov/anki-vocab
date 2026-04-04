@@ -41,6 +41,7 @@ Out of scope:
 
 Supported entrypoints:
 - `anki-vocab` (starts the interactive session)
+- `anki-vocab add ...`
 - `anki-vocab config ...`
 - `python -m anki_vocab`
 - `python main.py`
@@ -154,7 +155,25 @@ If invoked without subcommand:
   - on TTY stdin: prompts for key and writes it to config; empty input exits code 1
 - starts the interactive session immediately
 
-If the `config` subcommand is provided, normal Typer command flow is used.
+If a subcommand such as `config` or `add` is provided, normal Typer command flow is used.
+
+### 6.1 Direct add command
+
+- `anki-vocab add --lemma ... --target-surface ... --pos ... --meaning-ru ... --definition ... --context-source ... --context ... --cloze ... --context-ru ... --pattern ... --synonyms ... --notes ... --rarity ... --cefr ...`
+- all options are required
+- values are validated with the same non-empty-string `Card` schema used for model output
+- on success:
+  - TTS fields are generated when `tts.enabled` is true
+  - note is created in the configured deck/model
+  - duplicate handling matches interactive add (`allowDuplicate=false`)
+  - tags are `["auto"]` plus `"tts"` when any audio is attached
+  - stdout prints the new note id
+- on validation failure:
+  - prints an error to stderr
+  - exits with code 1
+- on TTS or AnkiConnect failure:
+  - prints an error to stderr
+  - exits with code 1
 
 ## 7. Card schema contract
 
