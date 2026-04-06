@@ -41,7 +41,9 @@ Out of scope:
 
 Supported entrypoints:
 - `anki-vocab` (starts the interactive session)
+- `anki-vocab show <note_id>`
 - `anki-vocab add ...`
+- `anki-vocab update <note_id> ...`
 - `anki-vocab config ...`
 - `python -m anki_vocab`
 - `python main.py`
@@ -155,9 +157,20 @@ If invoked without subcommand:
   - on TTY stdin: prompts for key and writes it to config; empty input exits code 1
 - starts the interactive session immediately
 
-If a subcommand such as `config` or `add` is provided, normal Typer command flow is used.
+If a subcommand such as `config`, `show`, `add`, or `update` is provided, normal Typer command flow is used.
 
-### 6.1 Direct add command
+### 6.1 Direct card commands
+
+- `anki-vocab show <note_id>`
+  - fetches the note via `notesInfo`
+  - prints JSON with:
+    - `note_id`
+    - `model_name`
+    - `tags`
+    - `card` (mapped card payload according to `field_map`)
+  - if the note is missing:
+    - prints an error to stderr
+    - exits with code 1
 
 - `anki-vocab add --lemma ... --target-surface ... --pos ... --meaning-ru ... --definition ... --context-source ... --context ... --cloze ... --context-ru ... --pattern ... --synonyms ... --notes ... --rarity ... --cefr ...`
 - all options are required
@@ -168,6 +181,21 @@ If a subcommand such as `config` or `add` is provided, normal Typer command flow
   - duplicate handling matches interactive add (`allowDuplicate=false`)
   - tags are `["auto"]` plus `"tts"` when any audio is attached
   - stdout prints the new note id
+- on validation failure:
+  - prints an error to stderr
+  - exits with code 1
+- on TTS or AnkiConnect failure:
+  - prints an error to stderr
+  - exits with code 1
+
+- `anki-vocab update <note_id> --lemma ... --target-surface ... --pos ... --meaning-ru ... --definition ... --context-source ... --context ... --cloze ... --context-ru ... --pattern ... --synonyms ... --notes ... --rarity ... --cefr ...`
+- `<note_id>` is required
+- all field options are required
+- values are validated with the same non-empty-string `Card` schema used for model output
+- on success:
+  - TTS fields are regenerated when `tts.enabled` is true
+  - mapped note fields are updated through `updateNoteFields`
+  - stdout prints the updated note id
 - on validation failure:
   - prints an error to stderr
   - exits with code 1

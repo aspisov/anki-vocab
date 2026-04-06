@@ -3,7 +3,7 @@ from __future__ import annotations
 import pytest
 
 from anki_vocab.core.config import Config, DEFAULT_FIELD_MAP
-from anki_vocab.core.note_builder import build_add_note_payload
+from anki_vocab.core.note_builder import build_add_note_payload, update_card_note
 from anki_vocab.core.schema import Card
 
 
@@ -80,3 +80,41 @@ def test_build_add_note_payload_adds_tts_fields_and_tag(monkeypatch: pytest.Monk
     assert note["fields"]["Audio Lemma"] == "[sound:lemma.mp3]"
     assert note["fields"]["Audio Context"] == "[sound:context.mp3]"
     assert note["tags"] == ["auto", "tts"]
+
+
+def test_update_card_note_sends_generated_fields(monkeypatch: pytest.MonkeyPatch) -> None:
+    captured: dict[str, object] = {}
+
+    def fake_build_audio_fields(
+        _url: str,
+        *,
+        lemma: str,
+        context: str,
+        voice: str,
+        rate: str,
+    ) -> tuple[str, str]:
+        captured["audio_args"] = {
+            "lemma": lemma,
+            "context": context,
+            "voice": voice,
+            "rate": rate,
+        }
+        return "[sound:lemma.mp3]", "[sound:context.mp3]"
+
+    def fake_update_note_fields(url: str, note_id: int, fields: dict[str, str]) -> None:
+        captured["update"] = {"url": url, "note_id": note_id, "fields": fields}
+
+    monkeypatch.setattr("anki_vocab.core.note_builder.build_audio_fields", fake_build_audio_fields)
+    monkeypatch.setattr("anki_vocab.core.note_builder.update_note_fields", fake_update_note_fields)
+
+    update_card_note(_config(), 123, _card())
+
+    assert captured["audio_args"] == {
+        "lemma": "run",
+        "context": "I run every morning before work.",
+        "voice": "voice",
+        "rate": "+0%",
+    }
+    assert captured["update"]["note_id"] == 123
+    assert captured["update"]["fields"]["Audio Lemma"] == "[sound:lemma.mp3]"
+    assert captured["update"]["fields"]["Audio Context"] == "[sound:context.mp3]"

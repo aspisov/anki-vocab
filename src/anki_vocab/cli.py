@@ -5,6 +5,8 @@ import typer
 from .commands.add import add_card_command
 from .commands.config import config_app
 from .commands.session import session_command
+from .commands.show import show_card_command
+from .commands.update import update_card_command
 from .core.config import config_path, resolve_config, update_config_value
 
 app = typer.Typer(
@@ -13,6 +15,8 @@ app = typer.Typer(
 )
 app.add_typer(config_app, name="config")
 app.command("add")(add_card_command)
+app.command("show")(show_card_command)
+app.command("update")(update_card_command)
 
 
 @app.callback()

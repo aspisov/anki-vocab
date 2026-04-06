@@ -56,9 +56,17 @@ Use:
 - `123456 | tts` to regenerate audio only
 - `q` to quit
 
-### Direct Add For Agents
+### Direct Card Tools For Agents
 
-If you already have every card field and just want to add the note with the configured TTS pipeline, use:
+If you want an agent to inspect, create, or update cards directly without the interactive session, use:
+
+Inspect an existing note:
+
+```bash
+uv run anki-vocab show 1772881185545
+```
+
+Create a note from explicit fields:
 
 ```bash
 uv run anki-vocab add \
@@ -78,11 +86,33 @@ uv run anki-vocab add \
   --cefr A2
 ```
 
+Update a note from explicit fields:
+
+```bash
+uv run anki-vocab update 1772881185545 \
+  --lemma accomplice \
+  --target-surface accomplice \
+  --pos noun \
+  --meaning-ru "сообщник" \
+  --definition "someone who helps another commit a crime" \
+  --context-source "You're gonna be an accomplice." \
+  --context "By helping the thief escape, you became an accomplice to the crime." \
+  --cloze "By helping the thief escape, you became an [...] to the crime." \
+  --context-ru "Помогая вору скрыться, ты стал сообщником преступления." \
+  --pattern "accomplice to + crime | accomplice in + act" \
+  --synonyms "accessory, collaborator, confederate" \
+  --notes "Criminal/legal context." \
+  --rarity Common \
+  --cefr C1
+```
+
 Notes:
 
 - All fields are required and must be non-empty strings.
 - Use `N/A` instead of leaving optional-looking fields blank.
-- The command prints the new note id to stdout.
+- `show` prints the mapped card JSON.
+- `add` prints the new note id to stdout.
+- `update` prints the updated note id to stdout.
 - TTS is attached when `tts.enabled` is true in config.
 
 - Config remains available:
