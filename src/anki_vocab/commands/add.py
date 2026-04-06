@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import Annotated
-
 import typer
 
 from .card_fields import (
@@ -22,11 +20,10 @@ from .card_fields import (
     parse_explicit_card,
 )
 from ..core.config import resolve_config
-from ..core.note_builder import update_card_note
+from ..core.note_builder import add_card_note
 
 
-def update_card_command(
-    note_id: Annotated[int, typer.Argument(help="Anki note id.")],
+def add_card_command(
     lemma: LemmaOption,
     target_surface: TargetSurfaceOption,
     pos: PosOption,
@@ -60,9 +57,9 @@ def update_card_command(
         cefr=cefr,
     )
     try:
-        update_card_note(config, note_id, card)
+        note_id = add_card_note(config, card)
     except Exception as exc:
-        typer.echo(f"Failed to update note: {exc}", err=True)
+        typer.echo(f"Failed to add note: {exc}", err=True)
         raise typer.Exit(code=1) from exc
 
     typer.echo(str(note_id))

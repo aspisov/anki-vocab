@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 import os
 from dataclasses import dataclass
@@ -32,9 +33,6 @@ class Config:
     note_model: str
     field_map: dict[str, str]
     ankiconnect_url: str
-    source_language: str
-    openai_api_key: str
-    openai_model: str
     tts_voice: str
     tts_rate: str
     tts_lemma_field: str
@@ -45,36 +43,14 @@ class Config:
 DEFAULT_CONFIG = Config(
     deck="Reading",
     note_model="English",
-    field_map=DEFAULT_FIELD_MAP,
+    field_map=dict(DEFAULT_FIELD_MAP),
     ankiconnect_url="http://127.0.0.1:8765",
-    source_language="en",
-    openai_api_key="",
-    openai_model="gpt-5.2",
     tts_voice="en-US-AvaNeural",
     tts_rate="+0%",
     tts_lemma_field="Audio Lemma",
     tts_context_field="Audio Context",
     tts_enabled=True,
 )
-
-DEFAULT_CONFIG_DICT = {
-    "deck": DEFAULT_CONFIG.deck,
-    "note_model": DEFAULT_CONFIG.note_model,
-    "field_map": DEFAULT_FIELD_MAP,
-    "ankiconnect_url": DEFAULT_CONFIG.ankiconnect_url,
-    "source_language": DEFAULT_CONFIG.source_language,
-    "openai_api_key": DEFAULT_CONFIG.openai_api_key,
-    "openai_model": DEFAULT_CONFIG.openai_model,
-    "tts": {
-        "voice": DEFAULT_CONFIG.tts_voice,
-        "rate": DEFAULT_CONFIG.tts_rate,
-        "lemma_field": DEFAULT_CONFIG.tts_lemma_field,
-        "context_field": DEFAULT_CONFIG.tts_context_field,
-        "enabled": DEFAULT_CONFIG.tts_enabled,
-    },
-    "session": {},
-}
-
 
 def config_path() -> Path:
     base = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config"))
@@ -85,11 +61,6 @@ def _read_file_config(path: Path) -> dict[str, Any]:
     if not path.exists():
         return {}
     return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _env_override(name: str) -> str | None:
-    return os.environ.get(name)
-
 
 def _coerce_bool(value: str) -> bool:
     return value.strip().lower() in {"1", "true", "yes", "on"}
@@ -105,17 +76,34 @@ def _merge_config(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, An
     return merged
 
 
+def _config_payload(config: Config) -> dict[str, Any]:
+    return {
+        "deck": config.deck,
+        "note_model": config.note_model,
+        "field_map": dict(config.field_map),
+        "ankiconnect_url": config.ankiconnect_url,
+        "tts": {
+            "voice": config.tts_voice,
+            "rate": config.tts_rate,
+            "lemma_field": config.tts_lemma_field,
+            "context_field": config.tts_context_field,
+            "enabled": config.tts_enabled,
+        },
+    }
+
+
+def _default_config_dict() -> dict[str, Any]:
+    return deepcopy(_config_payload(DEFAULT_CONFIG))
+
+
 def resolve_config() -> Config:
     file_config = _read_file_config(config_path())
-    merged = _merge_config(DEFAULT_CONFIG_DICT, file_config)
+    merged = _merge_config(_default_config_dict(), file_config)
 
     env_map = {
         "ANKI_VOCAB_DECK": ("deck", str),
         "ANKI_VOCAB_NOTE_MODEL": ("note_model", str),
         "ANKI_VOCAB_ANKICONNECT_URL": ("ankiconnect_url", str),
-        "ANKI_VOCAB_SOURCE_LANGUAGE": ("source_language", str),
-        "ANKI_VOCAB_OPENAI_API_KEY": ("openai_api_key", str),
-        "ANKI_VOCAB_OPENAI_MODEL": ("openai_model", str),
         "ANKI_VOCAB_TTS_VOICE": ("tts.voice", str),
         "ANKI_VOCAB_TTS_RATE": ("tts.rate", str),
         "ANKI_VOCAB_TTS_FIELD": ("tts.field", str),
@@ -125,7 +113,7 @@ def resolve_config() -> Config:
     }
 
     for env_name, (key, caster) in env_map.items():
-        value = _env_override(env_name)
+        value = os.getenv(env_name)
         if value is None:
             continue
         target = merged
@@ -156,9 +144,6 @@ def resolve_config() -> Config:
         note_model=str(merged.get("note_model", DEFAULT_CONFIG.note_model)),
         field_map={str(k): str(v) for k, v in field_map.items()},
         ankiconnect_url=str(merged.get("ankiconnect_url", DEFAULT_CONFIG.ankiconnect_url)),
-        source_language=str(merged.get("source_language", DEFAULT_CONFIG.source_language)),
-        openai_api_key=str(merged.get("openai_api_key", DEFAULT_CONFIG.openai_api_key)),
-        openai_model=str(merged.get("openai_model", DEFAULT_CONFIG.openai_model)),
         tts_voice=str(tts_config.get("voice", DEFAULT_CONFIG.tts_voice)),
         tts_rate=str(tts_config.get("rate", DEFAULT_CONFIG.tts_rate)),
         tts_lemma_field=tts_lemma_field,
@@ -169,13 +154,11 @@ def resolve_config() -> Config:
 
 def write_default_config(path: Path) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps(DEFAULT_CONFIG_DICT, indent=2, sort_keys=True), encoding="utf-8")
+    path.write_text(json.dumps(_default_config_dict(), indent=2, sort_keys=True), encoding="utf-8")
 
 
 def update_config_value(path: Path, key: str, value: str) -> None:
-    config = _read_file_config(path)
-    if not config:
-        config = json.loads(json.dumps(DEFAULT_CONFIG_DICT))
+    config = _read_file_config(path) or _default_config_dict()
 
     parts = key.split(".")
     current: dict[str, Any] = config
@@ -190,20 +173,4 @@ def update_config_value(path: Path, key: str, value: str) -> None:
 
 
 def config_as_dict(config: Config) -> dict[str, Any]:
-    return {
-        "deck": config.deck,
-        "note_model": config.note_model,
-        "field_map": dict(config.field_map),
-        "ankiconnect_url": config.ankiconnect_url,
-        "source_language": config.source_language,
-        "openai_api_key": config.openai_api_key,
-        "openai_model": config.openai_model,
-        "tts": {
-            "voice": config.tts_voice,
-            "rate": config.tts_rate,
-            "lemma_field": config.tts_lemma_field,
-            "context_field": config.tts_context_field,
-            "enabled": config.tts_enabled,
-        },
-        "session": {},
-    }
+    return _config_payload(config)
