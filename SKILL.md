@@ -14,21 +14,22 @@ Use this skill when the user asks you to create or update an Anki vocabulary car
 - Anki is running with AnkiConnect at the configured URL.
 - `edge-tts` is installed and available.
 - `tts.enabled` is `true` in config if audio should be attached.
+- For repo-local usage, prefer `uv run python -m anki_vocab ...`. It is slightly longer than `uv run anki-vocab ...`, but it avoids PATH collisions with another installed `anki-vocab`.
 
 ## Tools
 
 ```bash
 # Inspect a note
-uv run anki-vocab show NOTE_ID
+uv run python -m anki_vocab show NOTE_ID
 
 # Create a note from explicit fields
-uv run anki-vocab add --lemma ... --target-surface ... ...
+uv run python -m anki_vocab add --lemma ... --target-surface ... ...
 
 # Update a note from explicit fields
-uv run anki-vocab update NOTE_ID --lemma ... --target-surface ... ...
+uv run python -m anki_vocab update NOTE_ID --lemma ... --target-surface ... ...
 
 # Inspect active mapping and TTS config
-uv run anki-vocab config show
+uv run python -m anki_vocab config show
 ```
 
 ## Card Fields Reference
@@ -67,21 +68,21 @@ Every card has 14 required fields. All values must be non-empty strings.
 ### Create a new note
 
 1. Decide the full field set following the card fields reference above.
-2. Run `uv run anki-vocab add ...` with every field filled explicitly.
+2. Run `uv run python -m anki_vocab add ...` with every field filled explicitly.
 3. Keep the printed note id for later updates.
 
 ### Update an existing note
 
-1. Run `uv run anki-vocab show NOTE_ID`.
+1. Run `uv run python -m anki_vocab show NOTE_ID`.
 2. Read the current card fields from the JSON output.
 3. Decide the full replacement field set.
-4. Run `uv run anki-vocab update NOTE_ID ...` with every field filled explicitly.
+4. Run `uv run python -m anki_vocab update NOTE_ID ...` with every field filled explicitly.
 5. Read back with `show` if you need to verify the stored result.
 
 ## Example
 
 ```bash
-uv run anki-vocab add \
+uv run python -m anki_vocab add \
   --lemma "run" \
   --target-surface "run" \
   --pos "verb" \
