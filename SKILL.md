@@ -14,23 +14,38 @@ Use this skill when the user asks you to create or update an Anki vocabulary car
 - Anki is running with AnkiConnect at the configured URL.
 - `edge-tts` is installed and available.
 - `tts.enabled` is `true` in config if audio should be attached.
-- For repo-local usage, prefer `uv run python -m anki_vocab ...`. It is slightly longer than `uv run anki-vocab ...`, but it avoids PATH collisions with another installed `anki-vocab`.
+
+## Invocation
+
+Always invoke via `uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab ...`.
+
+- The `--project` flag lets you run from any cwd — no `cd` needed.
+- Use `python -m anki_vocab` (not bare `anki-vocab`) to avoid PATH collisions with an older `anki-vocab` binary on this machine that lacks the `add` command.
 
 ## Tools
 
 ```bash
 # Inspect a note
-uv run python -m anki_vocab show NOTE_ID
+uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab show NOTE_ID
 
 # Create a note from explicit fields
-uv run python -m anki_vocab add --lemma ... --target-surface ... ...
+uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab add --lemma ... --target-surface ... ...
 
 # Update a note from explicit fields
-uv run python -m anki_vocab update NOTE_ID --lemma ... --target-surface ... ...
+uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab update NOTE_ID --lemma ... --target-surface ... ...
 
 # Inspect active mapping and TTS config
-uv run python -m anki_vocab config show
+uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab config show
 ```
+
+## Troubleshooting
+
+- **`dyld: Library not loaded: libpython3.13.dylib` from `.venv/bin/python3`** → the venv is pointing at a Python that no longer exists. Rebuild it:
+  ```bash
+  rm -rf ~/.claude/skills/anki-card-generator/.venv
+  uv sync --project ~/.claude/skills/anki-card-generator
+  ```
+- **`No such command 'add'`** → you hit the older `anki-vocab` binary on PATH. Use the `python -m anki_vocab` invocation above instead.
 
 ## Card Fields Reference
 
@@ -68,21 +83,21 @@ Every card has 14 required fields. All values must be non-empty strings.
 ### Create a new note
 
 1. Decide the full field set following the card fields reference above.
-2. Run `uv run python -m anki_vocab add ...` with every field filled explicitly.
+2. Run the `add` command (see Invocation section) with every field filled explicitly.
 3. Keep the printed note id for later updates.
 
 ### Update an existing note
 
-1. Run `uv run python -m anki_vocab show NOTE_ID`.
+1. Run the `show NOTE_ID` command.
 2. Read the current card fields from the JSON output.
 3. Decide the full replacement field set.
-4. Run `uv run python -m anki_vocab update NOTE_ID ...` with every field filled explicitly.
+4. Run the `update NOTE_ID` command with every field filled explicitly.
 5. Read back with `show` if you need to verify the stored result.
 
 ## Example
 
 ```bash
-uv run python -m anki_vocab add \
+uv run --project ~/.claude/skills/anki-card-generator python -m anki_vocab add \
   --lemma "run" \
   --target-surface "run" \
   --pos "verb" \
